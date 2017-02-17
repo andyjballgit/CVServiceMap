@@ -53,7 +53,7 @@ Function Get-CVServiceMapMachinesSummary
         )
 
     # ie silly date in the past so we get everything , 
-    # ToDo not 100% sure how date works , maybe should just do offset from Now().UTC>AddHours(-2) or something ...
+    # ToDo not 100% sure how date works , maybe should just do offset from Now().UTC>AddHours(-2) or something ..
     $uriSuffix = "/machines/?api-version=2015-11-01-preview&live=false&timestamp=2017-02-17T09:57:56.9366303Z"
 
     If([string]::IsNullOrWhiteSpace($SubscriptionName))
@@ -65,7 +65,8 @@ Function Get-CVServiceMapMachinesSummary
             $ret = Get-CVServiceMapWrapper -OMSWorkspaceName $OMSWorkspaceName -ResourceGroupName $ResourceGroupName -SubscriptionName $SubscriptionName -URISuffix $uriSuffix
         }
     $ret.value | Select @{Name = "ComputerName" ; Expression = {$_.Properties.ComputerName}}, 
-                         @{Name = "FirstIPAddress" ; Expression = {$_.Properties.networking.ipv4Interfaces[0].ipAddress}}, 
+                        @{Name = "MachineName" ; Expression = {$_.name}}, 
+                        @{Name = "FirstIPAddress" ; Expression = {$_.Properties.networking.ipv4Interfaces[0].ipAddress}}, 
                         @{Name = "UTCBootTime" ; Expression = {$_.Properties.bootTime}} , 
                         @{Name = "TimeZoneDiff" ; Expression = {$_.Properties.timezone.fullName}},
                         @{Name = "AgentVersion" ; Expression = {$_.Properties.agent.dependencyAgentVersion}},
