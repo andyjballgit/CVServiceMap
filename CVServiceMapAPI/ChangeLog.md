@@ -1,4 +1,7 @@
 ## 17.02.2017 Version 0.03
+* Add Get-CVServiceMapMachinesSummary gives Summary of all machines in Service Map
+
+## 17.02.2017 Version 0.03
 * Add Get-CVServiceMapWrapper to allow easy explore / ad-hoc running of the API
 
 ## 17.02.2017 Version 0.03

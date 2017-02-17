@@ -74,7 +74,7 @@ Function Get-CVServiceMapSummary
     # Switch to correct sub if required
     $CurrentSub = (Get-AzureRMContext).Subscription
     $CurrentSubscriptionName = $CurrentSub.SubscriptionName
-    If ($SubscriptionName -ne $CurrentSubscriptionName)
+    If ([string]::IsNullOrWhiteSpace($SubscriptionName) -AND ($SubscriptionName -ne $CurrentSubscriptionName))
         {
             Write-Host "Switching to Subscription Name = $SubscriptionName (From $CurrentSubscriptionName)"
             $CurrentSub = Select-AzureRmSubscription -SubscriptionName $SubscriptionName

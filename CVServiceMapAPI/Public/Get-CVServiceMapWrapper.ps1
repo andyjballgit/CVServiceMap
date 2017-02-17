@@ -1,5 +1,4 @@
-﻿#region Functions
-<# 
+﻿<# 
  .Synopsis
   Generic Wrapper script for Azure Service Map REST API so can test / experiement with various API Calls 
 
@@ -54,7 +53,7 @@ Function Get-CVServiceMapWrapper
     Param
         (
             [Parameter(Mandatory = $true, Position = 0)]  [string] $OMSWorkspaceName  	,
-            [Parameter(Mandatory = $true, Position = 1)]  [string] $OMSResourceGroupName ,
+            [Parameter(Mandatory = $true, Position = 1)]  [string] $ResourceGroupName ,
             [Parameter(Mandatory = $false, Position = 2)]  [string] $SubscriptionName, 
             [Parameter(Mandatory = $true, Position = 2)]  [string] $URISuffix
         )
@@ -65,7 +64,7 @@ Function Get-CVServiceMapWrapper
     # Switch to correct sub if required
     $CurrentSub = (Get-AzureRMContext).Subscription
     $CurrentSubscriptionName = $CurrentSub.SubscriptionName
-    If ($SubscriptionName -ne $CurrentSubscriptionName)
+    If ( ([string]::IsNullOrWhiteSpace($SubscriptionName -eq $False)) -AND ($SubscriptionName -ne $CurrentSubscriptionName))
         {
             Write-Host "Switching to Subscription Name = $SubscriptionName (From $CurrentSubscriptionName)"
             $CurrentSub = Select-AzureRmSubscription -SubscriptionName $SubscriptionName
@@ -75,7 +74,7 @@ Function Get-CVServiceMapWrapper
     $SubscriptionID = $CurrentSub.SubscriptionId
     $TenantId = $CurrentSub.TenantId
     Write-Verbose "SubscriptionId = $SubscriptionId, TenantId = $TenantId"
-    $baseuri = "https://management.azure.com/subscriptions/$SubscriptionID/resourceGroups/$OMSResourceGroupName/providers/Microsoft.OperationalInsights/workspaces/$OMSWorkspaceName/features/serviceMap"
+    $baseuri = "https://management.azure.com/subscriptions/$SubscriptionID/resourceGroups/$ResourceGroupName/providers/Microsoft.OperationalInsights/workspaces/$OMSWorkspaceName/features/serviceMap"
     
     $uri = $baseuri + $URISuffix
      
@@ -86,7 +85,7 @@ Function Get-CVServiceMapWrapper
 
     # Finally call and format for output
     $res = Invoke-RestMethod -Method GET -Uri $uri -Headers $Header -Debug -Verbose
-    $res.properties 
+    $res
 }
 
 
