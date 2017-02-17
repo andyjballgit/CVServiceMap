@@ -26,11 +26,19 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Public\" />
+  </ItemGroup>
   <ItemGroup>
     <Compile Include="CVServiceMapAPI.psd1" />
     <Compile Include="CVServiceMapAPI.psm1" />
     <Compile Include="CVServiceMapAPI.tests.ps1" />
+    <Compile Include="Public\Get-AzureRESTAuthHeader.ps1" />
+    <Compile Include="Public\Get-CVServiceMapSummary.ps1" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="ChangeLog.md" />
+    <Content Include="README.md" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Target Name="Build" />
