@@ -34,13 +34,12 @@
  Subscription where OMS is located. Looks in current Subsription if null
 
  .Parameter VMName
- ComputerName you want to look up 
+ VM/ComputerName you want to look up 
 
  .Example
  Get-CVServiceMapMachineName -OMSWorkspaceName "OMSWorkspaceName" -ResourceGroupName "RGName"  -VMName "CV-SQL-001"
 
  
-
 #>
 Function Get-CVServiceMapMachineName
 {
