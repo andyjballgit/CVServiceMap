@@ -27,6 +27,7 @@
   Change Log
   ----------
   v1.00 Andy Ball 17/02/2017 Base Version
+  v1.01 Andy Ball 17/02/2017 Add Returntype param
 
  
  .Parameter OMSWorkspaceName
@@ -37,6 +38,9 @@
 
  .Parameter SubscriptionName
  Subscription where OMS is located. Looks in current Subsription if null
+
+ .Parameter Returntype
+ Either PSObject (Default) or JSON 
 
  .Example
  
@@ -55,7 +59,9 @@ Function Get-CVServiceMapWrapper
             [Parameter(Mandatory = $true, Position = 0)]  [string] $OMSWorkspaceName  	,
             [Parameter(Mandatory = $true, Position = 1)]  [string] $ResourceGroupName ,
             [Parameter(Mandatory = $false, Position = 2)]  [string] $SubscriptionName, 
-            [Parameter(Mandatory = $true, Position = 2)]  [string] $URISuffix
+            [Parameter(Mandatory = $true, Position = 2)]  [string] $URISuffix, 
+            [Parameter(Mandatory = $false, Position = 2)]  [string] [Validateset ("PSObject", "JSON")] $ReturnType = "PSObject" 
+
         )
             
     $ErrorActionPreference = "Stop"
@@ -85,7 +91,15 @@ Function Get-CVServiceMapWrapper
 
     # Finally call and format for output
     $res = Invoke-RestMethod -Method GET -Uri $uri -Headers $Header -Debug -Verbose
-    $res
+
+    If ($ReturnType -eq "PSObject")
+        {
+            $res
+        }
+    Else
+        {
+            $res | ConvertTo-JSON -Depth 100 
+        }
 }
 
 

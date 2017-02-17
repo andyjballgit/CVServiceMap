@@ -1,3 +1,6 @@
+## 17.02.2017 Version 0.04
+* Add Returntype param to so can return as JSON when exploring the API
+
 ## 17.02.2017 Version 0.03
 * Add Get-CVServiceMapMachinesSummary gives Summary of all machines in Service Map
 
