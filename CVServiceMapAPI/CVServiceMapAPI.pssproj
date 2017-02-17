@@ -35,6 +35,7 @@
     <Compile Include="CVServiceMapAPI.tests.ps1" />
     <Compile Include="Public\Get-AzureRESTAuthHeader.ps1" />
     <Compile Include="Public\Get-CVServiceMapSummary.ps1" />
+    <Compile Include="Public\Get-CVServiceMapWrapper.ps1" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="ChangeLog.md" />
