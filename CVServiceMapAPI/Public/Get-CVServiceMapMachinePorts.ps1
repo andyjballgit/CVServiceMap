@@ -9,7 +9,7 @@
  -----------
  #ie.
  AzureRM Modules - tested on 3.4 
- Get-AzureRESTAuthHeader func
+ Get-CVAzureRESTAuthHeader func
 
  Returns 
  -------

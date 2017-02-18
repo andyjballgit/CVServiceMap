@@ -7,7 +7,7 @@
   Prequisites
   -----------
   AzureRM Modules - tested on 3.4 
-  Get-AzureRESTAuthHeader func
+  Get-CVAzureRESTAuthHeader func
   Get-CVServiceMapMachinesSummary
 
   Returns 

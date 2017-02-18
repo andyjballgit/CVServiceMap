@@ -10,7 +10,7 @@
  Prequisites
  -----------
  AzureRM Modules - tested on 3.4 
- Get-AzureRESTAuthHeader func
+ Get-CVAzureRESTAuthHeader func
 
 
  Returns 
@@ -126,7 +126,7 @@ Function Get-CVServiceMapWrapper
     Write-Verbose "uri = $uri" 
 
     # Create standard Azure Auth header 
-    $Header = @{'Authorization' = (Get-AzureRESTAuthHeader)}
+    $Header = @{'Authorization' = (Get-CVAzureRESTAuthHeader)}
 
     # Finally call and format for output
     If ([string]::IsNullOrWhiteSpace($Body) -eq $true)

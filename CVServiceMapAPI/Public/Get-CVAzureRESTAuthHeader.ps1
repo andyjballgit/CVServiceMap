@@ -35,7 +35,7 @@
  
  .Example
   # Simply returns Subscription details
-  $MyRESTAuth  = Get-AzureRESTAuthHeader
+  $MyRESTAuth  = Get-CVAzureRESTAuthHeader
   # this creates a header for the REST call, sometimes will have extra values , see Example 2
   $RESTHeader = @{'Authorization' = $MyRESTAuth }
   # this is the particular REST method in Azure you want to call , browse https://resources.azure.com for the relevant uris
@@ -62,7 +62,7 @@
     $InvokeURI = "https://management.azure.com/api/invoke?_=1"
 
     #initialize Header with the Auth field
-    $Header = @{'Authorization' = (Get-AzureRESTAuthHeader)}
+    $Header = @{'Authorization' = (Get-CVAzureRESTAuthHeader)}
 
     # Now add the other stuff to the Header that is required for this particular call, ie XPath query and Command
     $Header += @{'Accept-Encoding' = 'gzip, deflate' ; 
@@ -79,7 +79,7 @@
     $RESTResult.template | ConvertTo-Json -Depth 20 | Out-File -FilePath $OutputFile 
 
 #>
-Function Get-AzureRESTAuthHeader
+Function Get-CVAzureRESTAuthHeader
   {
 
      Param

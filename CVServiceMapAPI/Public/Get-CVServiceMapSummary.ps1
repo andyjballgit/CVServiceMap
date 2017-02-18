@@ -1,15 +1,15 @@
 ﻿#region Functions
 <# 
  .Synopsis
-  Gets Summary of number of VMs that have Service Map for given   
+  Gets Summary of number of VMs that have Service Map for given OMSWorkspaceName /ResourceGroupName / Subscription
 
  .Description
-  
+ API Call 
   
   Prequisites
   -----------
   AzureRM Modules - tested on 3.4 
-  Get-AzureRESTAuthHeader func
+  Get-CVAzureRESTAuthHeader func
 
 
   Returns 
@@ -24,12 +24,11 @@
   Backlog 
   --------
   - tidy up subscription validation into common routine / func
-  - How to enumerate existing machines ! 
     
   Change Log
   ----------
   v1.00 Andy Ball 17/02/2017 Base Version
-
+  v1.01 Andy Ball 18/02/2017 Change to use wrapper func / standardise 
  
  .Parameter OMSWorkspaceName
   Name of OMS Workspace 
@@ -62,7 +61,7 @@ Function Get-CVServiceMapSummary
     Param
         (
             [Parameter(Mandatory = $true, Position = 0)]  [string] $OMSWorkspaceName  	,
-            [Parameter(Mandatory = $true, Position = 1)]  [string] $OMSResourceGroupName ,
+            [Parameter(Mandatory = $true, Position = 1)]  [string] $ResourceGroupName ,
             [Parameter(Mandatory = $false, Position = 2)]  [string] $SubscriptionName, 
             [Parameter(Mandatory = $false, Position = 3)]  [boolean] $GetVMCount = $true 
         )
@@ -71,34 +70,17 @@ Function Get-CVServiceMapSummary
     $ErrorActionPreference = "Stop"
     $VMCount = "N\A"
 
-    # Switch to correct sub if required
-    $CurrentSub = (Get-AzureRMContext).Subscription
-    $CurrentSubscriptionName = $CurrentSub.SubscriptionName
-    If ([string]::IsNullOrWhiteSpace($SubscriptionName) -AND ($SubscriptionName -ne $CurrentSubscriptionName))
-        {
-            Write-Host "Switching to Subscription Name = $SubscriptionName (From $CurrentSubscriptionName)"
-            $CurrentSub = Select-AzureRmSubscription -SubscriptionName $SubscriptionName
-        }
-
-    # Build up the URI for REST Call 
-    $SubscriptionID = $CurrentSub.SubscriptionId
-    $TenantId = $CurrentSub.TenantId
-    Write-Verbose "SubscriptionId = $SubscriptionId, TenantId = $TenantId"
-    $uri = "https://management.azure.com/subscriptions/$SubscriptionID/resourceGroups/$OMSResourceGroupName/providers/Microsoft.OperationalInsights/workspaces/$OMSWorkspaceName/features/serviceMap/summaries/machines?api-version=2015-11-01-preview"
-     
-    Write-Verbose "uri = $uri" 
-
     If ($GetVMCount)
         {
             Write-Verbose "Running Get-AzureRMVM to get current VMCount"
             $VMs = Get-AzureRMVM 
             $VMCount = @($VMs).Count.ToString()
         }
-    # Create standard Azure Auth header 
-    $Header = @{'Authorization' = (Get-LBEAzureRESTAuthHeader)}
 
+    $URISuffix = "/summaries/machines?api-version=2015-11-01-preview"
+    $res = Get-CVServiceMapWrapper -OMSWorkspaceName $OMSWorkspaceName -ResourceGroupName $ResourceGroupName -SubscriptionName $SubscriptionName -URISuffix $URISuffix -RESTMethod GET -ReturnType PSObject
     # Finally call and format for output
-    $res = Invoke-RestMethod -Method GET -Uri $uri -Headers $Header -Debug -Verbose
+    # $res = Invoke-RestMethod -Method GET -Uri $uri -Headers $Header -Debug -Verbose
     $res.properties | Select StartTime, EndTime, Total, Live, 
                         @{Name = "WindowsServers" ; Expression = {$_.os.windows}}, 
                         @{Name = "LinuxServers" ; Expression = {$_.os.linux}}, 
