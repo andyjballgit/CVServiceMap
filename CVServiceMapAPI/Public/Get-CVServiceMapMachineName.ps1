@@ -8,6 +8,7 @@
   -----------
   AzureRM Modules - tested on 3.4 
   Get-AzureRESTAuthHeader func
+  Get-CVServiceMapMachinesSummary
 
   Returns 
   -------
@@ -50,6 +51,8 @@ Function Get-CVServiceMapMachineName
             [Parameter(Mandatory = $false, Position = 2)]  [string] $SubscriptionName ,
             [Parameter(Mandatory = $true, Position = 3)]  [string] $VMName 
         )
+
+    $ErrorActionPreference = "Stop"
 
     $MachineName = $null
     If([string]::IsNullOrWhiteSpace($SubscriptionName))
