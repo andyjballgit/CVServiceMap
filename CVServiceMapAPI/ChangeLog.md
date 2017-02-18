@@ -1,4 +1,9 @@
-## 17.02.2017 Version 0.07
+## 18.02.2017 Version 0.08
+* Fix Subscription bug in Get-CVServiceMapWrapper 
+* Put good example in the help for above
+* Setup as Module
+
+# 17.02.2017 Version 0.07
 * Add Get-CVServiceMapMachineName func
 
 ## 17.02.2017 Version 0.06
