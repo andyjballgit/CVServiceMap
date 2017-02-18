@@ -1,3 +1,6 @@
+## 18.02.2017 Version 0.10
+* Add Get-ServiceMapList generic function for MachineName API Calls 
+
 ## 18.02.2017 Version 0.09
 * Add Get-CVServiceMap (currently broken)
 * Add Get-CVServiceMapMachinePorts/Processes

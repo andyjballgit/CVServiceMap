@@ -70,13 +70,15 @@ Function Get-CVServiceMap
     $StartTime = $EndTime.AddMinutes(-10)
 
     #ToDO Worse code ever , put in func or sort out proper way to deal with JSON dates in powershell cos it adds crap on..
-    $Now = $StartTime
-    $strStartTime =  $now.Year.TOString() + "-0" + $now.Month.ToString() + "-" + $now.Day.ToString() + "T" + $NOW.TimeOfDay.ToString().Substring(0, $now.timeofday.ToString().length -4) + "Z"
+    # $Now = $StartTime
+    #$strStartTime =  $now.Year.TOString() + "-0" + $now.Month.ToString() + "-" + $now.Day.ToString() + "T" + $NOW.TimeOfDay.ToString().Substring(0, $now.timeofday.ToString().length -4) + "Z"
 
-    $Now = $EndTime
-    $strEndTime =  $now.Year.TOString() + "-0" + $now.Month.ToString() + "-" + $now.Day.ToString() + "T" + $NOW.TimeOfDay.ToString().Substring(0, $now.timeofday.ToString().length -4) + "Z"
+    # $Now = $EndTime
+    # $strEndTime =  $now.Year.TOString() + "-0" + $now.Month.ToString() + "-" + $now.Day.ToString() + "T" + $NOW.TimeOfDay.ToString().Substring(0, $now.timeofday.ToString().length -4) + "Z"
 
-
+    $strEndTime = Get-CVJSONDateTime -MyDateTime $EndTime
+    $strStartTime = Get-CVJSONDateTime -MyDateTime $StartTime
+    
     $MachineName = "m-7309b470-4195-4ff5-9380-cbc9e6cc6e8e"
 
     $objBody = $Host | Select @{Name = "startTime" ; Expression = {$strStartTime}}, 
