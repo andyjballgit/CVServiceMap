@@ -1,9 +1,16 @@
+## 18.02.2017 Version 0.09
+* Add Get-CVServiceMap (currently broken)
+* Add Get-CVServiceMapMachinePorts/Processes
+* Update Get-CVServiceMapWrapper to handle POST
+* Add Helper\FunctionHeader.ps1
+
+
 ## 18.02.2017 Version 0.08
 * Fix Subscription bug in Get-CVServiceMapWrapper 
 * Put good example in the help for above
 * Setup as Module
 
-# 17.02.2017 Version 0.07
+## 17.02.2017 Version 0.07
 * Add Get-CVServiceMapMachineName func
 
 ## 17.02.2017 Version 0.06

@@ -27,14 +27,18 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Folder Include="Helper\" />
     <Folder Include="Public\" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CVServiceMapAPI.psd1" />
     <Compile Include="CVServiceMapAPI.psm1" />
     <Compile Include="CVServiceMapAPI.tests.ps1" />
+    <Compile Include="Helper\FunctionHeader.ps1" />
     <Compile Include="Public\Get-AzureRESTAuthHeader.ps1" />
     <Compile Include="Public\Get-CVServiceMapMachineName.ps1" />
+    <Compile Include="Public\Get-CVServiceMapMachinePorts.ps1" />
+    <Compile Include="Public\Get-CVServiceMapMachineProcesses.ps1" />
     <Compile Include="Public\Get-CVServiceMapMachinesSummary.ps1" />
     <Compile Include="Public\Get-CVServiceMapSummary.ps1" />
     <Compile Include="Public\Get-CVServiceMapWrapper.ps1" />

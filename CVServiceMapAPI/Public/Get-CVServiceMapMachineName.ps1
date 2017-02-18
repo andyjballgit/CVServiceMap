@@ -69,7 +69,7 @@ Function Get-CVServiceMapMachineName
     If ($MachineNameRecord -eq $null)
         {
             Write-warning "Cannot find ComputerName = $ComputerName in OMSWorkspaceName = $OMSWorkspaceName , ResourceGroupName = $ResourceGroupName"
-            $ret | Select ComputerName | Out-String 
+            $ret | Select ComputerName | Sort ComputerName | Out-String 
         }
     Else
         {

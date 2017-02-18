@@ -29,6 +29,7 @@
   v1.00 Andy Ball 17/02/2017 Base Version
   v1.01 Andy Ball 17/02/2017 Add Returntype param
   v1.02 Andy Ball 18/02/2017 Fix major bug in Subscription switch logic and add detailed example
+  v1.02 Andy Ball 18/02/2017 Add RESTMetohd and Body params / logic so can do POSTS 
  
  .Parameter OMSWorkspaceName
   Name of OMS Workspace 
@@ -39,9 +40,15 @@
  .Parameter SubscriptionName
  Subscription where OMS is located. Runs in current Subsription if null
 
- .URISuffix 
+ .Parameter URISuffix 
  gets appended to below to make up the uri that is called. Requires leading forward slash /
  https://management.azure.com/subscriptions/{subscriptionid}/resourceGroups/{resourcegroupname}/providers/Microsoft.OperationalInsights/workspaces/{OMSworkspaceName}/features/serviceMap
+
+ .Parameter RESTMethod
+ GET (default) or POST
+
+ .Parameter RESTBody
+ If RESTMethod POST then this can be used for sending the Body, JSON
 
  .Parameter Returntype
  Either PSObject (Default) or JSON. JSON is usefull when exploring output of an API call. 
@@ -86,9 +93,11 @@ Function Get-CVServiceMapWrapper
         (
             [Parameter(Mandatory = $true, Position = 0)]  [string] $OMSWorkspaceName,
             [Parameter(Mandatory = $true, Position = 1)]  [string] $ResourceGroupName,
-            [Parameter(Mandatory = $false, Position = 2)]  [string] $SubscriptionName,
+            [Parameter(Mandatory = $false, Position = 2)] [string] $SubscriptionName,
             [Parameter(Mandatory = $true, Position = 3)]  [string] $URISuffix, 
-            [Parameter(Mandatory = $false, Position = 4)] [string] [Validateset ("PSObject", "JSON")] $ReturnType = "PSObject" 
+            [Parameter(Mandatory = $false, Position = 4)]  [string] [ValidateSet("GET", "POST")] $RESTMethod = "GET", 
+            [Parameter(Mandatory = $false, Position = 5)]  [string] $Body, 
+            [Parameter(Mandatory = $false, Position = 6)] [string] [Validateset ("PSObject", "JSON")] $ReturnType = "PSObject" 
         )
 
     $ErrorActionPreference = "Stop"
@@ -120,8 +129,18 @@ Function Get-CVServiceMapWrapper
     $Header = @{'Authorization' = (Get-AzureRESTAuthHeader)}
 
     # Finally call and format for output
-    $res = Invoke-RestMethod -Method GET -Uri $uri -Headers $Header -Debug -Verbose
-
+    If ([string]::IsNullOrWhiteSpace($Body) -eq $true)
+        {
+            $res = Invoke-RestMethod -Method $RESTMethod -Uri $uri -Headers $Header -Debug -Verbose 
+        }
+    
+    Else
+        {
+           Write-Host "Get-CVServiceMapWrapper : Posting Body:`r`n$Body"
+           $res = Invoke-RestMethod -Method $RESTMethod -Uri $uri -Headers $Header -Debug -Verbose -Body $Body -ContentType "application/JSON" 
+        }
+    
+    
     If ($ReturnType -eq "PSObject")
         {
             $res
