@@ -3,7 +3,7 @@
   Single line , succinct summary of what func does
 
  .Description
- Expand out here if required
+ API Call - 
   
  Prequisites
  -----------

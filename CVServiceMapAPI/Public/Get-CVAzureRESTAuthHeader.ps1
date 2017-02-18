@@ -3,7 +3,7 @@
   Generates an Authentication Token / Header that can then be used when calling Azure REST API's. See Examples Section for how to use with Invoke-RESTMethod
 
  .Description
-  Adapted from below
+  Adapted from below, thx dude
   https://blogs.technet.microsoft.com/paulomarques/2016/04/05/working-with-azure-rest-apis-from-powershell-getting-page-and-block-blob-information-from-arm-based-storage-account-sample-script/
   
   Prequisites
@@ -14,8 +14,7 @@
   Returns 
   -------
   AuthorisationHeader object that can be used with Invoke-RESTMethod in the headers param 
-
-
+  
   Limitations and Known Issues
   ----------------------------
   

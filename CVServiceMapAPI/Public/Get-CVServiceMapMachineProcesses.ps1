@@ -3,7 +3,7 @@
   for given array of VMNames param , shows Processes that VMs Is using from current live data  
 
  .Description
- Calls API - https://docs.microsoft.com/en-us/rest/api/servicemap/machines#Machines_ListProcesses
+ API Call - https://docs.microsoft.com/en-us/rest/api/servicemap/machines#Machines_ListProcesses
   
  Prequisites
  -----------

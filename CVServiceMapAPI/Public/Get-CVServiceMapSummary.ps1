@@ -4,7 +4,7 @@
   Gets Summary of number of VMs that have Service Map for given OMSWorkspaceName /ResourceGroupName / Subscription
 
  .Description
- API Call 
+ API Call : https://docs.microsoft.com/en-us/rest/api/servicemap/summaries
   
   Prequisites
   -----------

@@ -5,19 +5,19 @@
  .Description
  appends specified URISuffix param to below 
  https://management.azure.com/subscriptions/{subscriptionid}/resourceGroups/{resourcegroupname}/providers/Microsoft.OperationalInsights/workspaces/{OMSworkspaceName}/features/serviceMap
-  
+ 
+ See below for API Details : 
+ https://docs.microsoft.com/en-us/rest/api/servicemap/
   
  Prequisites
  -----------
  AzureRM Modules - tested on 3.4 
  Get-CVAzureRESTAuthHeader func
-
-
+ 
  Returns 
  -------
-  Output of Service Map REST API Call as either PSObect or JSON
-
-
+ Output of Service Map REST API Call as either PSObect or JSON
+ 
  Limitations and Known Issues
  ----------------------------
   
@@ -26,10 +26,10 @@
      
  Change Log
  ----------
-  v1.00 Andy Ball 17/02/2017 Base Version
-  v1.01 Andy Ball 17/02/2017 Add Returntype param
-  v1.02 Andy Ball 18/02/2017 Fix major bug in Subscription switch logic and add detailed example
-  v1.02 Andy Ball 18/02/2017 Add RESTMetohd and Body params / logic so can do POSTS 
+ v1.00 Andy Ball 17/02/2017 Base Version
+ v1.01 Andy Ball 17/02/2017 Add Returntype param
+ v1.02 Andy Ball 18/02/2017 Fix major bug in Subscription switch logic and add detailed example
+ v1.03 Andy Ball 18/02/2017 Add RESTMetohd and Body params / logic so can do POSTS 
  
  .Parameter OMSWorkspaceName
   Name of OMS Workspace 

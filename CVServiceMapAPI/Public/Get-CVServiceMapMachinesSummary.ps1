@@ -3,7 +3,7 @@
  Returns Summary information about All ServiceMap MAchines in Given OMS Workspace / Resource Group
 
  .Description
-  
+  API Call - https://docs.microsoft.com/en-us/rest/api/servicemap/machines#Machines_Get
   
   Prequisites
   -----------
