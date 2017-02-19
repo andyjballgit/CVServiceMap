@@ -18,10 +18,9 @@
  Returns 
  -------
  
-
- Limitations and Known Issues
+  Limitations and Known Issues
  ----------------------------
- UK Date format ! 
+ 
 
  Backlog 
  --------
@@ -29,10 +28,14 @@
  Change Log
  ----------
  v1.00 Andy Ball 18/02/2017 Base Version
+ v1.01 Andy Ball 19/02/2017 Converts to UTC also via .ToUniversalTime()
  
 
  .Parameter MyDateTime
  Defaults to Get-Date if not passed
+
+ .Parameter ConvertToUTC
+ Default false, if true converts to UTC using .ToUniversalTime() method
 
  .Example
  returns current date/time in JSON Format
@@ -50,8 +53,18 @@ Function Get-CVJSONDateTime
 {
     Param
         (
-            [Parameter(Mandatory = $false, Position = 0)] [datetime] $MyDateTime = (Get-Date)
+            [Parameter(Mandatory = $false, Position = 0)] [datetime] $MyDateTime = (Get-Date), 
+            [Parameter(Mandatory = $false, Position = 1)] [boolean] $ConvertToUTC = $false
+
         )
+
+    If($ConvertToUTC)
+        {
+            $Before = $MyDateTime
+            $MyDateTime = $MyDateTime.ToUniversalTime()
+            Write-Verbose "Local Time = $Before, UTCTime = $MyDateTime"
+        }
+    
     $ShortDateString = $MyDateTime.ToShortDateString()
     $strDateTime =  $ShortDateString.Substring(6,4)  + "-" +
                     $ShortDateString.Substring(3,2) + "-" +

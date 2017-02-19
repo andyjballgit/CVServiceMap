@@ -20,6 +20,7 @@
  
  Limitations and Known Issues
  ----------------------------
+ - LocalStart / End time assumes GMT
   
  Backlog 
  --------
@@ -31,7 +32,8 @@
  v1.02 Andy Ball 18/02/2017 Fix major bug in Subscription switch logic and add detailed example
  v1.03 Andy Ball 18/02/2017 Add RESTMethod and Body params / logic so can do POSTS 
  v1.04 Andy Ball 19/02/2017 Add AuthRESTHeader param so that option of passing it in , rather than having to call Get-CVAzureRESTAuthHeader
- 
+ v1.05 Andy Ball 19/02/2017 Add LocalStart / End time params 
+
  .Parameter OMSWorkspaceName
   Name of OMS Workspace 
 
@@ -58,6 +60,40 @@
  Null by default, so will call Get-CVAzureRESTAuthHeader. 
  If not null will use this for REST Authorisation header , idea being if you are doing lots of calls to Get-ServiceMapWrapper (ie when looping through VMs) , only have to call 
  Get-CVAzureRESTAuthHeader once. 
+ 
+ .LocalStartTime
+ Time to search from in your local time zone
+ If not specifed does the last 10 mins
+
+ .LocalEndTime
+ Time to search to in your local time zone
+ If not specifed does the last 10 mins
+
+ .Example
+ Change params , will get process info for given VM going back 5 days until now (cos LocalEndTime is get-date)
+
+ $VMName = "CV-SOME-VM"
+ $OMSWorkspaceName = "MYOMSWORKSPACE"
+ $ResourceGroupName = "WorkSpaceRG"
+ $SubscriptionName = "Bizspark" 
+
+ # 5 days ago
+ $LocalStartTime = (Get-Date).AddDays(-5)
+ $LocalEndTime = Get-Date 
+
+ # Lookup "unfriendly" ServiceMap MachineName based on VMName
+ $MachineName = Get-CVServiceMapMachineName -OMSWorkspaceName $OMSWorkspaceName -ResourceGroupName $ResourceGroupName -VMName $VMName -SubscriptionName $SubscriptionName
+
+ # call API
+ $uriSuffix = "/machines/$MachineName/processes?api-version=2015-11-01-preview" 
+ $ret = Get-CVServiceMapWrapper -OMSWorkspaceName $OMSWorkspaceName `
+                               -ResourceGroupName $ResourceGroupName `
+                               -SubscriptionName $SubscriptionName `
+                               -ReturnType JSON `
+                               -URISuffix $uriSuffix `
+                               -LocalStartTime $LocalStartTime `
+                               -LocalEndTime $LocalEndTime 
+
  
  .Example
  This detailed example shows how get the unfriendly Machine name for a given VM then pass into Get-ServiceMapWrapper call the Ports function 
@@ -104,15 +140,33 @@ Function Get-CVServiceMapWrapper
             [Parameter(Mandatory = $false, Position = 4)]  [string] [ValidateSet("GET", "POST")] $RESTMethod = "GET", 
             [Parameter(Mandatory = $false, Position = 5)]  [string] $Body, 
             [Parameter(Mandatory = $false, Position = 6)] [string] [Validateset ("PSObject", "JSON")] $ReturnType = "PSObject", 
-            [Parameter(Mandatory = $false, Position = 7)] [string] $AzureRestHeader
-
+            [Parameter(Mandatory = $false, Position = 7)] [string] $AzureRestHeader,
+            [Parameter(Mandatory = $false, Position = 8)] [datetime] $LocalStartTime,
+            [Parameter(Mandatory = $false, Position = 9)] [datetime] $LocalEndTime
+             
 
 
         )
 
     $ErrorActionPreference = "Stop"
     $VMCount = "N\A"
+    
+    # ie assume we haven't got
+    $StartEndTimeSuffix = ""
 
+    If ( [string]::IsNullOrWhiteSpace($LocalStartTime) -eq $false -OR ([string]::IsNullOrWhiteSpace($LocalEndTime) -eq $false))
+        {
+            If ($LocalStartTime -gt $LocalEndTime)
+                {
+                    Write-Warning "LocalStartTime ($LocalStartTime) is greater than LocalEndTime ($LocalEndTime). Quitting"
+                    break
+                }
+            Else
+                {
+                    $StartEndTimeSuffix = "&" + (Get-CVJSONDateTime -MyDateTime $LocalStartTime -ConvertToUTC $true) + "&" + (Get-CVJSONDateTime -MyDateTime $LocalStartTime -ConvertToUTC $true)
+                }
+
+        }
     # Switch to correct sub if required
     $CurrentSub = (Get-AzureRMContext).Subscription
     $CurrentSubscriptionName = $CurrentSub.SubscriptionName
@@ -131,7 +185,8 @@ Function Get-CVServiceMapWrapper
     Write-Verbose "SubscriptionId = $SubscriptionId, TenantId = $TenantId"
     $baseuri = "https://management.azure.com/subscriptions/$SubscriptionID/resourceGroups/$ResourceGroupName/providers/Microsoft.OperationalInsights/workspaces/$OMSWorkspaceName/features/serviceMap"
     
-    $uri = $baseuri + $URISuffix
+    # glue together finally uri , StartEndTimeSuffix is blank if those params are not passed in
+    $uri = $baseuri + $URISuffix + $StartEndTimeSuffix
      
     Write-Verbose "uri = $uri" 
 
