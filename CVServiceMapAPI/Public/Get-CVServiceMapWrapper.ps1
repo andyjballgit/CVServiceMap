@@ -20,7 +20,6 @@
  
  Limitations and Known Issues
  ----------------------------
- - LocalStart / End time assumes GMT
   
  Backlog 
  --------
@@ -33,6 +32,7 @@
  v1.03 Andy Ball 18/02/2017 Add RESTMethod and Body params / logic so can do POSTS 
  v1.04 Andy Ball 19/02/2017 Add AuthRESTHeader param so that option of passing it in , rather than having to call Get-CVAzureRESTAuthHeader
  v1.05 Andy Ball 19/02/2017 Add LocalStart / End time params 
+ v1.06 Andy Ball 19/02/2017 Fix bug where wasn't picking up SubscriptionId 
 
  .Parameter OMSWorkspaceName
   Name of OMS Workspace 
@@ -174,13 +174,15 @@ Function Get-CVServiceMapWrapper
         {
             Write-Host "Switching to Subscription Name = $SubscriptionName (From $CurrentSubscriptionName)"
             $CurrentSub = Select-AzureRmSubscription -SubscriptionName $SubscriptionName
+            $SubscriptionID = $CurrentSub.Subscription.SubscriptionId
         }
     Else
         {
             Write-Host "Running in Current Subscription Name = $CurrentSubscriptionName"
+            $SubscriptionID = $CurrentSub.SubscriptionId
         }
     # Build up the URI for REST Call 
-    $SubscriptionID = $CurrentSub.SubscriptionId
+  
     $TenantId = $CurrentSub.TenantId
     Write-Verbose "SubscriptionId = $SubscriptionId, TenantId = $TenantId"
     $baseuri = "https://management.azure.com/subscriptions/$SubscriptionID/resourceGroups/$ResourceGroupName/providers/Microsoft.OperationalInsights/workspaces/$OMSWorkspaceName/features/serviceMap"

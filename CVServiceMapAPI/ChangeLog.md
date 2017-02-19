@@ -1,3 +1,6 @@
+## 19.02.2017 Version 0.14
+* Fix bug in Get-CVServiceMapWrapper where not picking up correct SubscriptionId
+
 ## 19.02.2017 Version 0.13
 * Add Start/EndTime to calling funcs but not working
 
