@@ -1,3 +1,6 @@
+## 19.02.2017 Version 0.13
+* Add Start/EndTime to calling funcs but not working
+
 ## 19.02.2017 Version 0.12
 * Get-CVServiceMapWrapper added StartDate and EndDate params
 

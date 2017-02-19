@@ -26,7 +26,7 @@
  ----------
  v1.00 Andy Ball 18/02/2017 Base Version
  v1.02 Andy Ball 19/02/2017 Fix minor bugs with counting VMs 
- 
+ v1.03 Andy Ball 19/02/2017 Add list type , LocalStart/Endtime params
 
  .Parameter OMSWorkspaceName
 
@@ -37,6 +37,13 @@
  .Parameter VMNames
 
  .Parameter ListType
+ either Live (or inventory , not implemented yet)
+
+ .Parameter LocalStartTime
+ when using ListType = Live
+
+ .Parameter LocalEndTime
+ when using ListType = Live
 
  .Example
  ToDo 
@@ -57,7 +64,10 @@ Function Get-CVServiceMapMachineList
             [Parameter(Mandatory = $true, Position = 1)]  [string] $ResourceGroupName,
             [Parameter(Mandatory = $false, Position = 2)]  [string] $SubscriptionName, 
             [Parameter(Mandatory = $false, Position = 3)]  [string[]] $VMNames, 
-            [Parameter(Mandatory = $true, Position = 4)]  [string] [ValidateSet("Ports", "Processes", "Connections")] $ListType = "Connections"
+            [Parameter(Mandatory = $true, Position = 4)]  [string] [ValidateSet("Ports", "Processes", "Connections")] $ListType = "Connections",
+            [Parameter(Mandatory = $false, Position = 5)]  [string] [ValidateSet("Live")] $ResourceType  = "Live", 
+            [Parameter(Mandatory = $false, Position = 6)]  [datetime] $LocalStartTime, 
+            [Parameter(Mandatory = $false, Position = 7)]  [datetime] $LocalEndTime
             
          )
 
@@ -81,8 +91,21 @@ Function Get-CVServiceMapMachineList
     $VMsCount = @($VMNames).Count
     [int] $CurrentVMNum = 1
 
+    # Get here so we don't have to call per VM 
     $AuthHeader = Get-CVAzureRESTAuthHeader 
 
+    # ie if not past set to the default
+    If (([string]::IsNullOrWhiteSpace($LocalEndTime)) -AND ([string]::IsNullOrWhiteSpace($LocalStartTime)))
+        {
+            $Now = Get-Date
+            $LocalEndTime = $Now 
+            $LocalStartTime = $Now.AddMinutes(-10)
+        }  
+    # Convert to JSON / UTC
+    $UTCStartTime = Get-CVJSONDateTime -MyDateTime $LocalStartTime -ConvertToUTC $true 
+    $UTCStartTime = Get-CVJSONDateTime -MyDateTime $LocalEndTime -ConvertToUTC $true 
+        
+   
     ForEach ($VMName in $VMNames)
     {
         Write-Host "Processing $VMName ($CurrentVMNum of $VMsCount)" -ForegroundColor Green
@@ -99,12 +122,14 @@ Function Get-CVServiceMapMachineList
 
         $MachineName = $VMNameRecord.MachineName
 
-        $uriSuffix = "/machines/$MachineName/" + $ListType.ToLower() + "?api-version=2015-11-01-preview" 
+        $uriSuffix = "/machines/$MachineName/" + $ListType.ToLower() + "?api-version=2015-11-01-preview&live=true&" + $UTCStartTime + "&" + $UTCEndTime  
         $ret = Get-CVServiceMapWrapper -URISuffix $uriSuffix `
                                        -OMSWorkspaceName $OMSWorkspaceName `
                                        -ResourceGroupName $ResourceGroupName `
                                        -SubscriptionName $SubscriptionName `
                                        -AzureRestHeader $AuthHeader
+
+
         #ToDo handle better / may get empty {} resultset ?  
         If ($ret -eq $null)
             {
@@ -133,6 +158,7 @@ Function Get-CVServiceMapMachineList
                         "Connections"
                             {
                                 $Resultset +=  $Resource| Select @{Name = "VMName" ; Expression = {$VMName}},
+                                                                 @{Name = "MonitoringState" ; Expression = {$MonitoringState}}, 
                                                                  @{Name = "SourceName" ; Expression = {$_.properties.source.name}} , 
                                                                  @{Name = "SourceType" ; Expression = {$_.properties.source.kind}} , 
                                                                  @{Name = "DestinationName" ; Expression = {$_.properties.destination.name}}, 
@@ -148,7 +174,8 @@ Function Get-CVServiceMapMachineList
 
                         "Processes"
                             {
-                                $Resultset += $Resource | Select @{Name = "MonitoringState" ; Expression = {$_.properties.monitoringState}}, 
+                                $Resultset += $Resource | Select @{Name = "VMName" ; Expression = {$VMName}},
+                                                                 @{Name = "MonitoringState" ; Expression = {$_.properties.monitoringState}}, 
                                                                  @{Name = "DisplayName" ; Expression = {$_.properties.displayName}},
                                                                  @{Name = "StartTime" ; Expression = {$_.properties.startTime}},
                                                                  @{Name = "FirstPID" ; Expression = {$_.properties.details.firstPid}}, 

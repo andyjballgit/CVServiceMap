@@ -63,7 +63,10 @@ Function Get-CVServiceMapSummary
             [Parameter(Mandatory = $true, Position = 0)]  [string] $OMSWorkspaceName  	,
             [Parameter(Mandatory = $true, Position = 1)]  [string] $ResourceGroupName ,
             [Parameter(Mandatory = $false, Position = 2)]  [string] $SubscriptionName, 
-            [Parameter(Mandatory = $false, Position = 3)]  [boolean] $GetVMCount = $true 
+            [Parameter(Mandatory = $false, Position = 3)]  [boolean] $GetVMCount = $true,
+            [Parameter(Mandatory = $false, Position = 4)]  [datetime] $LocalStartTime,
+            [Parameter(Mandatory = $false, Position = 5)]  [datetime] $LocalEndTime
+
         )
 
     
@@ -78,7 +81,15 @@ Function Get-CVServiceMapSummary
         }
 
     $URISuffix = "/summaries/machines?api-version=2015-11-01-preview"
-    $res = Get-CVServiceMapWrapper -OMSWorkspaceName $OMSWorkspaceName -ResourceGroupName $ResourceGroupName -SubscriptionName $SubscriptionName -URISuffix $URISuffix -RESTMethod GET -ReturnType PSObject
+    If ([string]::IsNullOrWhiteSpace($LocalStartTime) -eq $false -OR ([string]::IsNullOrWhiteSpace($LocalEndTime)) )
+        {
+             $res = Get-CVServiceMapWrapper -OMSWorkspaceName $OMSWorkspaceName -ResourceGroupName $ResourceGroupName -SubscriptionName $SubscriptionName -URISuffix $URISuffix -RESTMethod GET -ReturnType PSObject -LocalStartTime $LocalStartTime -LocalEndTime $LocalEndTime
+        }
+    Else
+        {
+             $res = Get-CVServiceMapWrapper -OMSWorkspaceName $OMSWorkspaceName -ResourceGroupName $ResourceGroupName -SubscriptionName $SubscriptionName -URISuffix $URISuffix -RESTMethod GET -ReturnType PSObject
+        }
+
     # Finally call and format for output
     # $res = Invoke-RestMethod -Method GET -Uri $uri -Headers $Header -Debug -Verbose
     $res.properties | Select StartTime, EndTime, Total, Live, 

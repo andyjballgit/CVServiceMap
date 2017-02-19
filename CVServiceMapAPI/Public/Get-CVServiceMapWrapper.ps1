@@ -163,7 +163,7 @@ Function Get-CVServiceMapWrapper
                 }
             Else
                 {
-                    $StartEndTimeSuffix = "&" + (Get-CVJSONDateTime -MyDateTime $LocalStartTime -ConvertToUTC $true) + "&" + (Get-CVJSONDateTime -MyDateTime $LocalStartTime -ConvertToUTC $true)
+                    $StartEndTimeSuffix = "&" + (Get-CVJSONDateTime -MyDateTime $LocalStartTime -ConvertToUTC $true) + "&" + (Get-CVJSONDateTime -MyDateTime $LocalEndTime -ConvertToUTC $true)
                 }
 
         }
