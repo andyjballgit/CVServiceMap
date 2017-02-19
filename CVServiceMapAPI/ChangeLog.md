@@ -1,3 +1,7 @@
+## 19.02.2017 Version 0.11
+* Get-CVServiceMapWrapper update so option of passing the Azure Auth Header to speed up when making many calls (ie looping through all Vms)
+* 
+
 ## 18.02.2017 Version 0.10
 * Add Get-ServiceMapList generic function for MachineName API Calls 
 

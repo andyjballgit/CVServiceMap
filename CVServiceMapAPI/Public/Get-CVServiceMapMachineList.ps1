@@ -25,6 +25,7 @@
  Change Log
  ----------
  v1.00 Andy Ball 18/02/2017 Base Version
+ v1.02 Andy Ball 19/02/2017 Fix minor bugs with counting VMs 
  
 
  .Parameter OMSWorkspaceName
@@ -63,8 +64,6 @@ Function Get-CVServiceMapMachineList
     $ErrorActionPreference = "Stop"
     # return this 
     $Resultset = @()
-    $VMsCount = @($VMNames).Count
-    [int] $CurrentVMNum = 1
 
     #Get all Machines here so we can use it as a lookup table of ComputerName to Service Map Machine Name 
     Write-Host "Getting All Machines for lookup table"
@@ -79,11 +78,13 @@ Function Get-CVServiceMapMachineList
                 }
         } 
 
+    $VMsCount = @($VMNames).Count
+    [int] $CurrentVMNum = 1
+
+    $AuthHeader = Get-CVAzureRESTAuthHeader 
+
     ForEach ($VMName in $VMNames)
     {
-        # get ServiceMapMachineName 
-        # $MachineName = Get-CVServiceMapMachineName -OMSWorkspaceName $OMSWorkspaceName -ResourceGroupName $ResourceGroupName -SubscriptionName $SubscriptionName -VMName $VMName
-        
         Write-Host "Processing $VMName ($CurrentVMNum of $VMsCount)" -ForegroundColor Green
         $MachineName = $null 
         $VMNameRecord = $null 
@@ -99,7 +100,11 @@ Function Get-CVServiceMapMachineList
         $MachineName = $VMNameRecord.MachineName
 
         $uriSuffix = "/machines/$MachineName/" + $ListType.ToLower() + "?api-version=2015-11-01-preview" 
-        $ret = Get-CVServiceMapWrapper -URISuffix $uriSuffix -OMSWorkspaceName $OMSWorkspaceName -ResourceGroupName $ResourceGroupName -SubscriptionName $SubscriptionName
+        $ret = Get-CVServiceMapWrapper -URISuffix $uriSuffix `
+                                       -OMSWorkspaceName $OMSWorkspaceName `
+                                       -ResourceGroupName $ResourceGroupName `
+                                       -SubscriptionName $SubscriptionName `
+                                       -AzureRestHeader $AuthHeader
         #ToDo handle better / may get empty {} resultset ?  
         If ($ret -eq $null)
             {
@@ -161,9 +166,10 @@ Function Get-CVServiceMapMachineList
 
             }
 
-         $CurrentVMNum++
-    }
+        }
     
+        
+        $CurrentVMNum++
     } #ForEach VM
 
     #

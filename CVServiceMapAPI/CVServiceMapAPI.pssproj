@@ -28,6 +28,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Folder Include="Helper\" />
+    <Folder Include="Repros\" />
     <Folder Include="Public\" />
   </ItemGroup>
   <ItemGroup>
@@ -45,10 +46,13 @@
     <Compile Include="Public\Get-CVServiceMapMachinesSummary.ps1" />
     <Compile Include="Public\Get-CVServiceMapSummary.ps1" />
     <Compile Include="Public\Get-CVServiceMapWrapper.ps1" />
+    <Compile Include="Repros\MapRepro.ps1" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="ChangeLog.md" />
     <Content Include="README.md" />
+    <Content Include="Repros\getmap.json" />
+    <Content Include="Repros\MachineNames.csv" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Target Name="Build" />

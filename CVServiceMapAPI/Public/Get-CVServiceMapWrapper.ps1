@@ -29,7 +29,8 @@
  v1.00 Andy Ball 17/02/2017 Base Version
  v1.01 Andy Ball 17/02/2017 Add Returntype param
  v1.02 Andy Ball 18/02/2017 Fix major bug in Subscription switch logic and add detailed example
- v1.03 Andy Ball 18/02/2017 Add RESTMetohd and Body params / logic so can do POSTS 
+ v1.03 Andy Ball 18/02/2017 Add RESTMethod and Body params / logic so can do POSTS 
+ v1.04 Andy Ball 19/02/2017 Add AuthRESTHeader param so that option of passing it in , rather than having to call Get-CVAzureRESTAuthHeader
  
  .Parameter OMSWorkspaceName
   Name of OMS Workspace 
@@ -53,6 +54,11 @@
  .Parameter Returntype
  Either PSObject (Default) or JSON. JSON is usefull when exploring output of an API call. 
 
+ .AzureRestHeader 
+ Null by default, so will call Get-CVAzureRESTAuthHeader. 
+ If not null will use this for REST Authorisation header , idea being if you are doing lots of calls to Get-ServiceMapWrapper (ie when looping through VMs) , only have to call 
+ Get-CVAzureRESTAuthHeader once. 
+ 
  .Example
  This detailed example shows how get the unfriendly Machine name for a given VM then pass into Get-ServiceMapWrapper call the Ports function 
  and then dump to JSON and finally load up in Visual Studio Code so can explore the object
@@ -97,7 +103,11 @@ Function Get-CVServiceMapWrapper
             [Parameter(Mandatory = $true, Position = 3)]  [string] $URISuffix, 
             [Parameter(Mandatory = $false, Position = 4)]  [string] [ValidateSet("GET", "POST")] $RESTMethod = "GET", 
             [Parameter(Mandatory = $false, Position = 5)]  [string] $Body, 
-            [Parameter(Mandatory = $false, Position = 6)] [string] [Validateset ("PSObject", "JSON")] $ReturnType = "PSObject" 
+            [Parameter(Mandatory = $false, Position = 6)] [string] [Validateset ("PSObject", "JSON")] $ReturnType = "PSObject", 
+            [Parameter(Mandatory = $false, Position = 7)] [string] $AzureRestHeader
+
+
+
         )
 
     $ErrorActionPreference = "Stop"
@@ -125,8 +135,13 @@ Function Get-CVServiceMapWrapper
      
     Write-Verbose "uri = $uri" 
 
-    # Create standard Azure Auth header 
-    $Header = @{'Authorization' = (Get-CVAzureRESTAuthHeader)}
+    # Create standard Azure Auth header if not passed in as param
+    If ([string]::IsNullOrWhiteSpace($AzureRestHeader))
+        {
+            $AzureRestHeader = Get-CVAzureRESTAuthHeader
+        }
+    
+    $Header = @{'Authorization' = ($AzureRestHeader)}
 
     # Finally call and format for output
     If ([string]::IsNullOrWhiteSpace($Body) -eq $true)
