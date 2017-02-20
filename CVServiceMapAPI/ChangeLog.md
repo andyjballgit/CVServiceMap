@@ -1,3 +1,6 @@
+## 20.02.2017 Version 0.15 
+* Add Helper.ps1 for running / testing the various funcs
+
 ## 19.02.2017 Version 0.14
 * Fix bug in Get-CVServiceMapWrapper where not picking up correct SubscriptionId
 

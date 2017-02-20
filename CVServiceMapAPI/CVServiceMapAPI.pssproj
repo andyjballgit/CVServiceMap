@@ -36,6 +36,7 @@
     <Compile Include="CVServiceMapAPI.psm1" />
     <Compile Include="CVServiceMapAPI.tests.ps1" />
     <Compile Include="Helper\FunctionHeader.ps1" />
+    <Compile Include="Helper\Helper.ps1" />
     <Compile Include="Public\Get-CVAzureRESTAuthHeader.ps1" />
     <Compile Include="Public\Get-CVJSONDateTime.ps1" />
     <Compile Include="Public\Get-CVServiceMap.ps1" />
