@@ -28,7 +28,7 @@
   ----------
   v1.00 Andy Ball 17/02/2017 Base Version
   v1.01 Andy Ball 19/02/2017 Add GetMethod param so can use custom code to get the map 
-
+  v1.02 Andy Ball 20/02/2017 Change JSON payload to MachineId
  
  .Parameter OMSWorkspaceName
   Name of OMS Workspace 
@@ -64,7 +64,7 @@ Function Get-CVServiceMap
             [Parameter(Mandatory = $true, Position = 1)]  [string] $ResourceGroupName ,
             [Parameter(Mandatory = $false, Position = 2)]  [string] $SubscriptionName, 
             [Parameter(Mandatory = $false, Position = 3)]  [string] [ValidateSet("Custom", "Microsoft")] $GetMethod = "Custom" ,
-            [Parameter(Mandatory = $false, Position = 4)]  [string] [ValidateSet("map:single-Machine-dependency", "map:machine-group-dependency")] $MapType = "map:single-Machine-dependency"
+            [Parameter(Mandatory = $false, Position = 4)]  [string] [ValidateSet("map:single-Machine-dependency")] $MapType = "map:single-Machine-dependency"
 
         )
 
@@ -82,12 +82,13 @@ Function Get-CVServiceMap
     
     If ($GetMethod -eq "Microsoft")
         {
+            #ToDo Hardcoded
             $MachineName = "m-7309b470-4195-4ff5-9380-cbc9e6cc6e8e"
 
             $objBody = $Host | Select @{Name = "startTime" ; Expression = {$strStartTime}}, 
                                       @{Name = "endTime" ; Expression = {$strEndTime}}, 
                                       @{Name = "kind" ; Expression = {$MapType}} , 
-                                      @{Name = "machine Name"; Expression = {$MachineName}}
+                                      @{Name = "machineId"; Expression = {$MachineName}}
 
                               
             $JSONBody = $objBody | ConvertTo-Json 
