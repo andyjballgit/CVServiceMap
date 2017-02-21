@@ -27,6 +27,7 @@
   ----------
   v1.00 Andy Ball 17/02/2017 Base Version
   v1.01 Andy Ball 19/02/2017 Add timestamp field /param 
+  v1.02 Andy Ball 21/02/2017 Add MachineId to output
   
  
  .Parameter OMSWorkspaceName
@@ -81,6 +82,7 @@ Function Get-CVServiceMapMachinesSummary
             $ret = Get-CVServiceMapWrapper -OMSWorkspaceName $OMSWorkspaceName -ResourceGroupName $ResourceGroupName -SubscriptionName $SubscriptionName -URISuffix $uriSuffix
         }
     $ret.value | Select @{Name = "ComputerName" ; Expression = {$_.Properties.ComputerName}}, 
+                        @{Name = "MachineId" ; Expression = {$_.id}},
                         @{Name = "timestamp" ; Expression = {$_.Properties.timestamp}}, 
                         @{Name = "MachineName" ; Expression = {$_.name}}, 
                         @{Name = "FirstIPAddress" ; Expression = {$_.Properties.networking.ipv4Interfaces[0].ipAddress}}, 

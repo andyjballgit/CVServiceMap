@@ -29,6 +29,7 @@
   v1.00 Andy Ball 17/02/2017 Base Version
   v1.01 Andy Ball 19/02/2017 Add GetMethod param so can use custom code to get the map 
   v1.02 Andy Ball 20/02/2017 Change JSON payload to MachineId
+  v1.03 Andy Ball 21/02/2017 Changet to actually use .Id for MachineId (was incorrectly using MachineName)
  
  .Parameter OMSWorkspaceName
   Name of OMS Workspace 
@@ -44,7 +45,7 @@
  Microsoft         - having issues getting native API Call working  https://docs.microsoft.com/en-us/rest/api/servicemap/maps
 
  .MapType
- either "map:single-Machine-dependency" default "map:machine-group-dependency"
+ either "map:single-Machine-dependency" default "map:machine-group-dependency" (this is not currently implemented in Service Maps)
 
 
  .Example
@@ -63,14 +64,15 @@ Function Get-CVServiceMap
             [Parameter(Mandatory = $true, Position = 0)]  [string] $OMSWorkspaceName  	,
             [Parameter(Mandatory = $true, Position = 1)]  [string] $ResourceGroupName ,
             [Parameter(Mandatory = $false, Position = 2)]  [string] $SubscriptionName, 
-            [Parameter(Mandatory = $false, Position = 3)]  [string] [ValidateSet("Custom", "Microsoft")] $GetMethod = "Custom" ,
-            [Parameter(Mandatory = $false, Position = 4)]  [string] [ValidateSet("map:single-Machine-dependency")] $MapType = "map:single-Machine-dependency"
+            [Parameter(Mandatory = $false, Position = 3)]  [string[]] $VMNames, 
+            [Parameter(Mandatory = $false, Position = 4)]  [string] [ValidateSet("Custom", "Microsoft")] $GetMethod = "Microsoft",
+            [Parameter(Mandatory = $false, Position = 5)]  [string] [ValidateSet("map:single-Machine-dependency")] $MapType = "map:single-Machine-dependency"
 
         )
 
     
     $ErrorActionPreference = "Stop"
-    $EndTime = [DateTime]::UtcNow
+    $EndTime = Get-Date
     $StartTime = $EndTime.AddMinutes(-10)
 
   
@@ -80,24 +82,59 @@ Function Get-CVServiceMap
     $strEndTime = Get-CVJSONDateTime -MyDateTime $EndTime
     $strStartTime = Get-CVJSONDateTime -MyDateTime $StartTime
     
+    $Resultset = @()
+
     If ($GetMethod -eq "Microsoft")
         {
-            #ToDo Hardcoded
-            $MachineName = "m-7309b470-4195-4ff5-9380-cbc9e6cc6e8e"
 
-            $objBody = $Host | Select @{Name = "startTime" ; Expression = {$strStartTime}}, 
-                                      @{Name = "endTime" ; Expression = {$strEndTime}}, 
-                                      @{Name = "kind" ; Expression = {$MapType}} , 
-                                      @{Name = "machineId"; Expression = {$MachineName}}
+                           
+            $AllMachines = Get-CVServiceMapMachinesSummary -OMSWorkspaceName $OMSWorkspaceName -ResourceGroupName $ResourceGroupName -SubscriptionName $SubscriptionName
+            ForEach($VMName in $VMNames)
+                {
+                    $ret = $null 
+                    Write-Host "Processing $VMName"
+                    $MachineName = $null
+                    $MachineNameRecord = $null 
+                     
+                    $MachineNameRecord = $AllMachines | Where {$_.ComputerName -eq $VMName}
+                    If ($MachineNameRecord -eq $null)
+                        {
+                            Write-Warning "`tCannot find $VMName in ServiceMap"
+                        }
+                    Else
+                        {
+                            $MachineName = $MachineNameRecord.MachineName 
+                            $objBody = $Host | Select @{Name = "kind" ; Expression = {$MapType}} , 
+                                                      @{Name = "machineId"; Expression = {$MachineNameRecord.MachineId}},
+                                                      @{Name = "startTime" ; Expression = {$strStartTime}}, 
+                                                      @{Name = "endTime" ; Expression = {$strEndTime}}
+                                                     
+                            $JSONBody = $objBody | ConvertTo-Json 
+                            Write-Verbose -Message $JSONBody
+
+                            $uriSuffix = "/generateMap?api-version=2015-11-01-preview" 
+                            Write-Host ("Generating Service Map type = $MapType, With machineId = $MachinName from $StartTime to $EndTime @ " + (Get-Date))
+                            
+                            try
+                                {
+                                    $ret = Get-CVServiceMapWrapper -URISuffix $uriSuffix -OMSWorkspaceName $OMSWorkspaceName -ResourceGroupName $ResourceGroupName -SubscriptionName $SubscriptionName -RESTMethod POST -Body $JSONBody 
+                                }
+                            catch
+                                {
+
+                                    $MyError = $Error[0]
+                                    Write-Host ""
+                                }
+
+                        }
+
+                      $Resultset +=  $Host | Select @{Name = "VMName" ; Expression = {$VMName}}, 
+                                                    @{Name = "Ret" ; Expression = {$ret}} 
+
+                }
+
 
                               
-            $JSONBody = $objBody | ConvertTo-Json 
-            Write-Verbose -Message $JSONBody
-
-            $uriSuffix = "/generateMap?api-version=2015-11-01-preview" 
-            #$uriSuffix = "/machines/$MachineName/generateMap?api-version=2015-11-01-preview"
-            Write-Host ("Generating Service Map type = $MapType from $StartTime to $EndTime @ " + (Get-Date))
-            $ret = Get-CVServiceMapWrapper -URISuffix $uriSuffix -OMSWorkspaceName $OMSWorkspaceName -ResourceGroupName $ResourceGroupName -SubscriptionName $SubscriptionName -RESTMethod POST -Body $JSONBody 
         }
     # Custom below 
     Else
@@ -105,5 +142,6 @@ Function Get-CVServiceMap
             Throw "not implemented yet"
         }
 
+    $Resultset
 }
 

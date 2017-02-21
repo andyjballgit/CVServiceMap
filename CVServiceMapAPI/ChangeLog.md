@@ -1,3 +1,6 @@
+## 21.02.2017 Version 0.16 
+* Fix bug with Get-ServiceMap not working , as was using MachineName, not ID in API Call.
+
 ## 20.02.2017 Version 0.15 
 * Add Helper.ps1 for running / testing the various funcs
 

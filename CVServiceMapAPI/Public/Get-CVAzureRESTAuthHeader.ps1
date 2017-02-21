@@ -24,7 +24,7 @@
   Change Log
   ----------
   v1.00 Andy Ball 21/12/2016 Base Version
-
+  
  
  .Parameter ApiEndpointUri
  Endpoint URI for Azure Managmeent. Defaults to "https://management.core.windows.net/" and this is unlikely to ever change
@@ -97,7 +97,6 @@ Function Get-CVAzureRESTAuthHeader
             Write-Host "Using TenantId = $TenantId from SubscriptionName = $SubscriptionName"
             Write-Host ""
             $AADTenantID = $TenantId 
-
         }
 
      Write-Verbose "AADTentantID = $AADTenantID"

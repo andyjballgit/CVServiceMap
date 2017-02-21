@@ -33,6 +33,7 @@
  v1.04 Andy Ball 19/02/2017 Add AuthRESTHeader param so that option of passing it in , rather than having to call Get-CVAzureRESTAuthHeader
  v1.05 Andy Ball 19/02/2017 Add LocalStart / End time params 
  v1.06 Andy Ball 19/02/2017 Fix bug where wasn't picking up SubscriptionId 
+ v1.07 Andy Ball 21/02/2017 Change so that passes TenantId into Get-CVAzureRESTAuthHeader
 
  .Parameter OMSWorkspaceName
   Name of OMS Workspace 
@@ -137,7 +138,7 @@ Function Get-CVServiceMapWrapper
             [Parameter(Mandatory = $true, Position = 1)]  [string] $ResourceGroupName,
             [Parameter(Mandatory = $false, Position = 2)] [string] $SubscriptionName,
             [Parameter(Mandatory = $true, Position = 3)]  [string] $URISuffix, 
-            [Parameter(Mandatory = $false, Position = 4)]  [string] [ValidateSet("GET", "POST")] $RESTMethod = "GET", 
+            [Parameter(Mandatory = $false, Position = 4)]  [string] [ValidateSet("PUT", "GET", "POST")] $RESTMethod = "GET", 
             [Parameter(Mandatory = $false, Position = 5)]  [string] $Body, 
             [Parameter(Mandatory = $false, Position = 6)] [string] [Validateset ("PSObject", "JSON")] $ReturnType = "PSObject", 
             [Parameter(Mandatory = $false, Position = 7)] [string] $AzureRestHeader,
@@ -175,11 +176,13 @@ Function Get-CVServiceMapWrapper
             Write-Host "Switching to Subscription Name = $SubscriptionName (From $CurrentSubscriptionName)"
             $CurrentSub = Select-AzureRmSubscription -SubscriptionName $SubscriptionName
             $SubscriptionID = $CurrentSub.Subscription.SubscriptionId
+            $TenantId = $CurrentSub.Subscription.TenantId
         }
     Else
         {
             Write-Host "Running in Current Subscription Name = $CurrentSubscriptionName"
             $SubscriptionID = $CurrentSub.SubscriptionId
+            $TenantId = $CurrentSub.TenantId 
         }
     # Build up the URI for REST Call 
   
@@ -195,7 +198,7 @@ Function Get-CVServiceMapWrapper
     # Create standard Azure Auth header if not passed in as param
     If ([string]::IsNullOrWhiteSpace($AzureRestHeader))
         {
-            $AzureRestHeader = Get-CVAzureRESTAuthHeader
+            $AzureRestHeader = Get-CVAzureRESTAuthHeader -AADTenantID $TenantId
         }
     
     $Header = @{'Authorization' = ($AzureRestHeader)}
@@ -209,7 +212,18 @@ Function Get-CVServiceMapWrapper
     Else
         {
            Write-Host "Get-CVServiceMapWrapper : Posting Body:`r`n$Body"
-           $res = Invoke-RestMethod -Method $RESTMethod -Uri $uri -Headers $Header -Debug -Verbose -Body $Body -ContentType "application/JSON" 
+           try 
+           {
+            $res = Invoke-RestMethod -Method $RESTMethod -Uri $uri -Headers $Header -Debug -Verbose -Body $Body -ContentType "application/JSON" -ErrorVariable $MyError
+            }
+        Catch
+            {
+
+                $MyError  = $_
+                Write-Warning "Error`r`n$MyError"
+                Break
+                Write-Host ""
+            }
         }
     
     
