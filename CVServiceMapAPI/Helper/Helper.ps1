@@ -1,15 +1,22 @@
-﻿#Helper.ps1 
-# for testing of CVServiceMAPAPI Scripts
+﻿<# Helper.ps1 
 
-Import-Module $PSScriptRoot\..\CVServiceMapAPI -Force -Verbose
+Helper / Unit type tests for Saervice Map APO calls 
+
+v1.00 Andy Ball 22/2/2017 Base Version
+#>
+
+Import-Module C:\Workarea\Repos\CVServiceMapAPI\CVServiceMapAPI\CVServiceMapAPI -Force -Verbose
+$ErrorActionPreference = "Stop"
+
 
 # Change these values
-$VMNames = @("somevm1", "somevm2")
-$SubscriptionName = "ChangeMe" 
+$VMNames = @("Server1", "Server2")
+$SubscriptionName = "Live" 
+Select-AzureRmSubscription -SubscriptionName $SubscriptionName
 
-# Lookup OMS Workspaces , if only 1 use it , otherewise list and then can hard code values yourself 
 $OMSWorkspaces = $null 
 $OMSWorkspaces = Get-AzureRmOperationalInsightsWorkspace 
+
 If (@($OMSWorkspaces).Count -eq 1)
     {
        $OMSWorkspaceName = $OMSWorkspaces[0].Name 
@@ -18,21 +25,28 @@ If (@($OMSWorkspaces).Count -eq 1)
     }
 Else
     {
-        $OMSWorkspaces | Select Name, ResourceGroupName | Out-String 
+        If ($OMSWorkspaces -eq $null)
+            {
+                Write-Host "No OMS Workspaces found in Subscription = $SubscriptionName"
+            }
+        Else
+            {
+                $OMSWorkspaces | Select Name, ResourceGroupName | Out-String 
+            }
         Break 
     }
 
 $LocalEndTime = (Get-Date).AddDays(-2) 
 $LocalStartTime = (Get-Date).AddDays(-4)
 
-# Change here to decide which bits to run
-$DoServiceMapRAW = $true 
+$DoServiceMapRAW = $false 
 $DoServiceMapMachineLiveNess = $false 
 $DoServiceMapConnectionsRAW = $false
 $DoServiceMapMachineSummaryRAW = $false 
-$DoServiceMapMachineSummary = $false
+$DoServiceMapMachineSummary = $true
 $DoServiceMapSummary = $false
-$DoServiceMap = $false 
+$DoServiceMap = $false
+$DoServiceMapAll = $false
 $DoServiceMapConnections = $false
 $DoMachineByNameWithDate = $false 
 
@@ -119,19 +133,31 @@ If ($DoServiceMapMachineSummary)
         Get-CVServiceMapMachinesSummary -OMSWorkspaceName $OMSWorkspaceName `
                                         -ResourceGroupName $ResourceGroupName `
                                         -SubscriptionName $SubscriptionName `
+                                        -ShowAllVMsStatus $true `
                                         -LocalTimeStamp $LocalTimestamp | Export-CSV -Path "c:\temp\MachineNames.csv" -Force -NoTypeInformation
         . "c:\temp\MachineNames.csv"
     }
 
 If ($DoServiceMapSummary)
     {
-        Get-CVServiceMapSummary -OMSWorkspaceName $OMSWorkspaceName -ResourceGroupName $ResourceGroupName -LocalStartTime $LocalStartTime -LocalEndTime $LocalEndTime
+        $ret = Get-CVServiceMapSummary -OMSWorkspaceName $OMSWorkspaceName -ResourceGroupName $ResourceGroupName -LocalStartTime $LocalStartTime -LocalEndTime $LocalEndTime 
+        $ret 
     }
 
 If($DoServiceMap)
     {
-        Get-CVServiceMap -GetMethod Custom -SubscriptionName $SubscriptionName -OMSWorkspaceName $OMSWorkspaceName -ResourceGroupName $ResourceGroupName -MapType map:machine-group-dependency
+       $ret = Get-CVServiceMap -VMName $VMNames-SubscriptionName $SubscriptionName -OMSWorkspaceName $OMSWorkspaceName -ResourceGroupName $ResourceGroupName -MapType map:single-Machine-dependency
+       $ret | ConvertTo-JSON -Depth 100 | Out-File "c:\temp\ServiceMap\ServiceMap.json"
+       Code "c:\temp\ServiceMap\ServiceMap.json"
     }
+
+If($DoServiceMapAll)
+    {
+       $ret = Get-CVServiceMap -SubscriptionName $SubscriptionName -OMSWorkspaceName $OMSWorkspaceName -ResourceGroupName $ResourceGroupName -MapType map:single-Machine-dependency
+       $ret | ConvertTo-JSON -Depth 100 | Out-File "c:\temp\ServiceMap\ServiceMapAll.json"
+       Code "c:\temp\ServiceMap\ServiceMapAll.json"
+    }
+
 
 If($DoServiceMapConnections)
     {

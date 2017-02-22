@@ -1,3 +1,7 @@
+## 21.02.2017 Version 0.17
+* Update Get-CVServiceMap so handles multiple VMs properly
+* Change Get-CVServiceMapMachinesSummary so has option to list VMs without active ServiceMap client
+
 ## 21.02.2017 Version 0.16 
 * Fix bug with Get-ServiceMap not working , as was using MachineName, not ID in API Call.
 

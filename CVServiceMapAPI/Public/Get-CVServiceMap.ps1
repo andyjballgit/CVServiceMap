@@ -1,6 +1,6 @@
 ﻿<# 
  .Synopsis
-  Generates a Service Map Map 
+  Generates a Service Map Map , currently returns as Recordset with VMName, and then raw ServiceMap Object , so can be dumped to JSON / explored
 
  .Description
   https://docs.microsoft.com/en-us/rest/api/servicemap/maps
@@ -30,6 +30,7 @@
   v1.01 Andy Ball 19/02/2017 Add GetMethod param so can use custom code to get the map 
   v1.02 Andy Ball 20/02/2017 Change JSON payload to MachineId
   v1.03 Andy Ball 21/02/2017 Changet to actually use .Id for MachineId (was incorrectly using MachineName)
+  v1.04 Andy Ball 22/02/2017 Remove param , add progress when rolling through VMs
  
  .Parameter OMSWorkspaceName
   Name of OMS Workspace 
@@ -45,7 +46,7 @@
  Microsoft         - having issues getting native API Call working  https://docs.microsoft.com/en-us/rest/api/servicemap/maps
 
  .MapType
- either "map:single-Machine-dependency" default "map:machine-group-dependency" (this is not currently implemented in Service Maps)
+ either "map:single-Machine-dependency" (default) or  "map:machine-group-dependency" (this is not currently implemented in Service Maps)
 
 
  .Example
@@ -53,7 +54,15 @@
  Get-ServiceMap -OMSWorkspaceName "MyWorkspace" -ResourceGroupName "MyOMSWorkspaceRG" -SubscriptionName "Dev" -Verbose
  
  .Example
+ Dump as JSON , will be around 3mbyte of JSON Per Server
+ 
+ $SubscriptionName = "MySub"
+ $OMSWorkspaceName = "OMSWorkspace"
+ $ResourceGroupName = "RGWhereOMSIs"
 
+ $ret = Get-CVServiceMap -SubscriptionName $SubscriptionName -OMSWorkspaceName $OMSWorkspaceName -ResourceGroupName $ResourceGroupName -MapType map:single-Machine-dependency
+ $ret | ConvertTo-JSON -Depth 100 | Out-File "c:\temp\ServiceMap\ServiceMapAll.json"
+ Code "c:\temp\ServiceMap\ServiceMapAll.json"
 
 #>
 
@@ -65,34 +74,49 @@ Function Get-CVServiceMap
             [Parameter(Mandatory = $true, Position = 1)]  [string] $ResourceGroupName ,
             [Parameter(Mandatory = $false, Position = 2)]  [string] $SubscriptionName, 
             [Parameter(Mandatory = $false, Position = 3)]  [string[]] $VMNames, 
-            [Parameter(Mandatory = $false, Position = 4)]  [string] [ValidateSet("Custom", "Microsoft")] $GetMethod = "Microsoft",
-            [Parameter(Mandatory = $false, Position = 5)]  [string] [ValidateSet("map:single-Machine-dependency")] $MapType = "map:single-Machine-dependency"
+            [Parameter(Mandatory = $false, Position = 5)]  [string] [ValidateSet("map:single-Machine-dependency",  "map:machine-group-dependency")] $MapType = "map:single-Machine-dependency"
 
         )
 
-    
     $ErrorActionPreference = "Stop"
     $EndTime = Get-Date
+   
+    #Barf because not actually implemented yet by MS 22 feb 2017
+    If ($MapType -eq "map:machine-group-dependency")
+        {
+            Throw "Documented in API but not yet implented yet"
+            Break
+        }
+      
     $StartTime = $EndTime.AddMinutes(-10)
-
-  
-    # $Now = $EndTime
-    # $strEndTime =  $now.Year.TOString() + "-0" + $now.Month.ToString() + "-" + $now.Day.ToString() + "T" + $NOW.TimeOfDay.ToString().Substring(0, $now.timeofday.ToString().length -4) + "Z"
 
     $strEndTime = Get-CVJSONDateTime -MyDateTime $EndTime
     $strStartTime = Get-CVJSONDateTime -MyDateTime $StartTime
     
-    $Resultset = @()
 
-    If ($GetMethod -eq "Microsoft")
+    # ToDo Refactor
+    If ([string]::IsNullOrWhiteSpace($VMNames))
         {
 
-                           
+            Write-Verbose "VMNames param is null , getting all active VMs"
             $AllMachines = Get-CVServiceMapMachinesSummary -OMSWorkspaceName $OMSWorkspaceName -ResourceGroupName $ResourceGroupName -SubscriptionName $SubscriptionName
-            ForEach($VMName in $VMNames)
+            $VMNames = @()
+            ForEach($VMName in $AllMachines.ComputerName)
+                {
+                    $VMNames += $VMName
+                }
+        } 
+
+
+    $Resultset = @()
+    $VMsCount = @($VMNames).Count
+    $CurrentVMNum = 1 
+
+    $AllMachines = Get-CVServiceMapMachinesSummary -OMSWorkspaceName $OMSWorkspaceName -ResourceGroupName $ResourceGroupName -SubscriptionName $SubscriptionName
+    ForEach($VMName in $VMNames)
                 {
                     $ret = $null 
-                    Write-Host "Processing $VMName"
+                    Write-Host "Processing $VMName ($CurrentVMNum of $VMsCount)" -ForegroundColor Green 
                     $MachineName = $null
                     $MachineNameRecord = $null 
                      
@@ -131,16 +155,9 @@ Function Get-CVServiceMap
                       $Resultset +=  $Host | Select @{Name = "VMName" ; Expression = {$VMName}}, 
                                                     @{Name = "Ret" ; Expression = {$ret}} 
 
+                       $CurrentVMNum++
                 }
 
-
-                              
-        }
-    # Custom below 
-    Else
-        {
-            Throw "not implemented yet"
-        }
 
     $Resultset
 }
