@@ -1,3 +1,6 @@
+## 21.02.2017 Version 0.18
+* remove Get-ServiceMapPorts/Machines as handled by generic func Get-ServiceMapMachineList
+* 
 ## 21.02.2017 Version 0.17
 * Update Get-CVServiceMap so handles multiple VMs properly
 * Change Get-CVServiceMapMachinesSummary so has option to list VMs without active ServiceMap client
