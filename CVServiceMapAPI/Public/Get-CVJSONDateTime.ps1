@@ -69,7 +69,8 @@ Function Get-CVJSONDateTime
     $strDateTime =  $ShortDateString.Substring(6,4)  + "-" +
                     $ShortDateString.Substring(3,2) + "-" +
                     $ShortDateString.Substring(0,2) + "T" +
-                    $MyDateTime.TimeOfDay.ToString() + "Z"
+                    $MyDateTime.TimeOfDay.ToString().Split(".")[0]
+                    # $MyDateTime.TimeOfDay.ToString() + "Z"
                     #$MyDateTime.TimeOfDay.ToString().Substring(0, $MyDateTime.timeofday.ToString().length -4) + "Z"
    
    $strDateTime 

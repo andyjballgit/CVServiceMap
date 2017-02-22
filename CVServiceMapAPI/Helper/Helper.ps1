@@ -36,15 +36,15 @@ Else
         Break 
     }
 
-$LocalEndTime = (Get-Date).AddDays(-2) 
-$LocalStartTime = (Get-Date).AddDays(-4)
+$LocalEndTime = (Get-Date)
+$LocalStartTime = (Get-Date).AddMinutes(-50)
 
 $DoServiceMapRAW = $false 
 $DoServiceMapMachineLiveNess = $false 
 $DoServiceMapConnectionsRAW = $false
 $DoServiceMapMachineSummaryRAW = $false 
-$DoServiceMapMachineSummary = $true
-$DoServiceMapSummary = $false
+$DoServiceMapMachineSummary = $false
+$DoServiceMapSummary = $true
 $DoServiceMap = $false
 $DoServiceMapAll = $false
 $DoServiceMapConnections = $false
@@ -129,11 +129,12 @@ If ($DoServiceMapConnectionsRAW)
 If ($DoServiceMapMachineSummary)
     {
         $LocalTimestamp = (Get-Date).AddDays(-10)
-
+        $VMStatusSubscriptionNames = @("Non-Live")
         Get-CVServiceMapMachinesSummary -OMSWorkspaceName $OMSWorkspaceName `
                                         -ResourceGroupName $ResourceGroupName `
                                         -SubscriptionName $SubscriptionName `
                                         -ShowAllVMsStatus $true `
+                                        -VMsStatusSubscriptionNames $VMStatusSubscriptionNames `
                                         -LocalTimeStamp $LocalTimestamp | Export-CSV -Path "c:\temp\MachineNames.csv" -Force -NoTypeInformation
         . "c:\temp\MachineNames.csv"
     }

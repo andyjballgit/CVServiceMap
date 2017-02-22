@@ -62,7 +62,8 @@ Function Get-CVServiceMapMachinesSummary
             [Parameter(Mandatory = $true, Position = 1)]  [string] $ResourceGroupName ,
             [Parameter(Mandatory = $false, Position = 2)]  [string] $SubscriptionName , 
             [Parameter(Mandatory = $false, Position = 3)]  [boolean] $ShowAllVMsStatus = $false , 
-            [Parameter(Mandatory = $false, Position = 4)]  [string] $LocalTimeStamp 
+            [Parameter(Mandatory = $false, Position = 4)]  [string[]] $VMsStatusSubscriptionNames, 
+            [Parameter(Mandatory = $false, Position = 5)]  [string] $LocalTimeStamp 
 
         )
 
@@ -110,25 +111,39 @@ Function Get-CVServiceMapMachinesSummary
     # Create a row for each VM in Subscription that doesnt appear in ServiceMap results 
     If ($ShowAllVMsStatus)
         {
-            Write-Host "Running Get-AzureRMVM so can check for inactive / non-installed machines."
-            $AllVMs = Get-AzureRMVM 
-            $VMsWithoutServiceMap = $AllVMs | Where {$_.Name -notin $Resultset.ComputerName}
-            ForEach ($MissingVM in $VMsWithoutServiceMap)
+            $AllVms = @()
+            # ie if not specified use the OMS Workspace Subscription to look for VMs
+            If ([string]::IsNullOrWhiteSpace($VMsStatusSubscriptions))
                 {
-                    $ResultSet += $Host | Select @{Name = "ComputerName" ; Expression = {$MissingVM.Name}}, 
-                          @{Name = "timestamp" ; Expression = {"N\A"}}, 
-                        @{Name = "MachineName" ; Expression = {"N\A"}}, 
-                        @{Name = "FirstIPAddress" ; Expression = {"N\A"}}, 
-                        @{Name = "UTCBootTime" ; Expression = {"N\A"}} , 
-                        @{Name = "TimeZoneDiff" ; Expression = {"N\A"}},
-                        @{Name = "AgentVersion" ; Expression = {"Not installed"}},
-                        @{Name = "AgentRevision" ; Expression = {"Not Installed"}}, 
-                        @{Name = "AgentRebootStatus" ; Expression = {"N\A"}},
-                        @{Name  = "VMType" ;  Expression = {"N\A"}},
-                        @{Name  = "MemoryMB" ;  Expression = {"N\A"}},
-                        @{Name  = "CPUs" ;  Expression = {"N\A"}},
-                        @{Name = "OS" ; Expression = {"N\A"}} ,
-                        @{Name = "MachineId" ; Expression = {"N\A"}}
+                    $VMStatusSubscriptions = $SubscriptionName
+                }
+
+            ForEach ($SubscriptionName in $VMsStatusSubscriptionNames)
+                {
+                    $ThisSubsVms = @()
+                    Write-Host "Switching to $SubscriptionName to Get Vms"
+                    $Sub = Select-AzureRmSubscription -SubscriptionName $SubscriptionName
+                    
+                    Write-Host "Running Get-AzureRMVM so can check for inactive / non-installed machines."
+                    $ThisSubsVms = Get-AzureRMVM 
+                    $VMsWithoutServiceMap = $ThisSubsVms | Where {$_.Name -notin $Resultset.ComputerName}
+                    ForEach ($MissingVM in $VMsWithoutServiceMap)
+                        {
+                            $ResultSet += $Host | Select @{Name = "ComputerName" ; Expression = {$MissingVM.Name}}, 
+                                  @{Name = "timestamp" ; Expression = {"N\A"}}, 
+                                @{Name = "MachineName" ; Expression = {"N\A"}}, 
+                                @{Name = "FirstIPAddress" ; Expression = {"N\A"}}, 
+                                @{Name = "UTCBootTime" ; Expression = {"N\A"}} , 
+                                @{Name = "TimeZoneDiff" ; Expression = {"N\A"}},
+                                @{Name = "AgentVersion" ; Expression = {"Not installed"}},
+                                @{Name = "AgentRevision" ; Expression = {"Not Installed"}}, 
+                                @{Name = "AgentRebootStatus" ; Expression = {"N\A"}},
+                                @{Name  = "VMType" ;  Expression = {"N\A"}},
+                                @{Name  = "MemoryMB" ;  Expression = {"N\A"}},
+                                @{Name  = "CPUs" ;  Expression = {"N\A"}},
+                                @{Name = "OS" ; Expression = {"N\A"}} ,
+                                @{Name = "MachineId" ; Expression = {"N\A"}}
+                        }
                 }
         }
     # Finally return
