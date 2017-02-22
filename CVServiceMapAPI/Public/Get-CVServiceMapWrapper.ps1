@@ -57,16 +57,16 @@
  .Parameter Returntype
  Either PSObject (Default) or JSON. JSON is usefull when exploring output of an API call. 
 
- .AzureRestHeader 
+ .Parameter AzureRestHeader 
  Null by default, so will call Get-CVAzureRESTAuthHeader. 
  If not null will use this for REST Authorisation header , idea being if you are doing lots of calls to Get-ServiceMapWrapper (ie when looping through VMs) , only have to call 
  Get-CVAzureRESTAuthHeader once. 
  
- .LocalStartTime
+ .Parameter LocalStartTime
  Time to search from in your local time zone
  If not specifed does the last 10 mins
 
- .LocalEndTime
+ .Parameter LocalEndTime
  Time to search to in your local time zone
  If not specifed does the last 10 mins
 

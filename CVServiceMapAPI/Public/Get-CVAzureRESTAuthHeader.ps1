@@ -1,6 +1,6 @@
 ﻿<# 
  .Synopsis
-  Generates an Authentication Token / Header that can then be used when calling Azure REST API's. See Examples Section for how to use with Invoke-RESTMethod
+  Generates an Authentication Token / Header that can then be used when calling Azure REST API's. See Examples Section for how to use with Invoke-RESTMethod.
 
  .Description
   Adapted from below, thx dude

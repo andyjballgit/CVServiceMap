@@ -1,8 +1,7 @@
-﻿#region Functions
-<# 
+﻿<# 
  .Synopsis
   Gets Summary of number of VMs that have Service Map for given OMSWorkspaceName /ResourceGroupName / Subscription
-
+  
  .Description
  API Call : https://docs.microsoft.com/en-us/rest/api/servicemap/summaries
   
@@ -39,7 +38,7 @@
  .Parameter SubscriptionName
  Subscription where OMS is located. Looks in current Subsription if null
 
- .GetVMCount 
+ .Parameter GetVMCount 
  If true (Default) will get a count of VMs in current subscription, ie so can get feel for coverage of Service Map
 
  .Example

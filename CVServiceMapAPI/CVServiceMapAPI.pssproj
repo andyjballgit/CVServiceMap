@@ -36,6 +36,7 @@
     <Compile Include="CVServiceMapAPI.psm1" />
     <Compile Include="CVServiceMapAPI.tests.ps1" />
     <Compile Include="Helper\FunctionHeader.ps1" />
+    <Compile Include="Helper\GenerateReadMe.ps1" />
     <Compile Include="Helper\Helper.ps1" />
     <Compile Include="Public\Get-CVAzureRESTAuthHeader.ps1" />
     <Compile Include="Public\Get-CVJSONDateTime.ps1" />
@@ -45,11 +46,13 @@
     <Compile Include="Public\Get-CVServiceMapMachinesSummary.ps1" />
     <Compile Include="Public\Get-CVServiceMapSummary.ps1" />
     <Compile Include="Public\Get-CVServiceMapWrapper.ps1" />
+    <Compile Include="Public\Get-CVMarkDownFileForCmdLets.ps1" />
+    <Compile Include="ReadMe.md" />
     <Compile Include="Repros\MapRepro.ps1" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="ChangeLog.md" />
-    <Content Include="README.md" />
+    <Content Include="ReadmeHeader.md" />
     <Content Include="Repros\getmap.json" />
     <Content Include="Repros\MachineNames.csv" />
   </ItemGroup>

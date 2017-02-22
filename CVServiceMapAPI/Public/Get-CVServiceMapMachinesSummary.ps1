@@ -42,7 +42,7 @@
  .Parameter SubscriptionName
  Subscription where OMS is located. Looks in current Subsription if null
 
- .ShowAllVMsStatus
+ .Parameter ShowAllVMsStatus
  False by default, if true does a Get-AzureRMVM in $SubscriptionName to attempt to show Servers where no Service Map data. See limitations above
 
  .Parameter LocalTimeStamp

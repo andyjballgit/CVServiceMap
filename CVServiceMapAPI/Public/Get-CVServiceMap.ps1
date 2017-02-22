@@ -1,6 +1,6 @@
 ﻿<# 
  .Synopsis
-  Generates a Service Map Map , currently returns as Recordset with VMName, and then raw ServiceMap Object , so can be dumped to JSON / explored
+  Generates a Service Map Map , currently returns as Recordset with VMName, and then raw ServiceMap Object , so can be dumped to JSON / explored.
 
  .Description
   https://docs.microsoft.com/en-us/rest/api/servicemap/maps
@@ -45,7 +45,7 @@
  Custom (default)  - glue together based on call Connections, Ports, Processes
  Microsoft         - having issues getting native API Call working  https://docs.microsoft.com/en-us/rest/api/servicemap/maps
 
- .MapType
+ .Parameter MapType
  either "map:single-Machine-dependency" (default) or  "map:machine-group-dependency" (this is not currently implemented in Service Maps)
 
 

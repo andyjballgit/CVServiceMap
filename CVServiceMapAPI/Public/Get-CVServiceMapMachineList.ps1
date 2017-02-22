@@ -1,8 +1,8 @@
 ﻿<# 
  .Synopsis
- Generic function that calls either _ListPorts, _ListConnections or List_Processes depending on the ListType Param
- .
- Description
+ Generic function that calls either _ListPorts, _ListConnections or List_Processes depending on the ListType Param.
+  .
+ .Description
  API Call - https://docs.microsoft.com/en-us/rest/api/servicemap/machines#Machines_ListPorts
   
  Prequisites
@@ -29,13 +29,17 @@
  v1.03 Andy Ball 19/02/2017 Add list type , LocalStart/Endtime params
 
  .Parameter OMSWorkspaceName
-
+ a
+ 
  .Parameter ResourceGroupName
-
+ a
+ 
  .Parameter SubscriptionName
-
+ a
+ 
  .Parameter VMNames
-
+ a
+ 
  .Parameter ListType
  either Live (or inventory , not implemented yet)
 
