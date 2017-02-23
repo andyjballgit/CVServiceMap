@@ -34,7 +34,8 @@
  v1.05 Andy Ball 19/02/2017 Add LocalStart / End time params 
  v1.06 Andy Ball 19/02/2017 Fix bug where wasn't picking up SubscriptionId 
  v1.07 Andy Ball 21/02/2017 Change so that passes TenantId into Get-CVAzureRESTAuthHeader
-
+ v1.08,Andy Ball 22/02/2017 got StartTime / End tme right
+ 
  .Parameter OMSWorkspaceName
   Name of OMS Workspace 
 
@@ -164,7 +165,7 @@ Function Get-CVServiceMapWrapper
                 }
             Else
                 {
-                    $StartEndTimeSuffix = "&" + (Get-CVJSONDateTime -MyDateTime $LocalStartTime -ConvertToUTC $true) + "&" + (Get-CVJSONDateTime -MyDateTime $LocalEndTime -ConvertToUTC $true)
+                    $StartEndTimeSuffix = "&startTime=" + (Get-CVJSONDateTime -MyDateTime $LocalStartTime -ConvertToUTC $true) + "&endTime=" + (Get-CVJSONDateTime -MyDateTime $LocalEndTime -ConvertToUTC $true)
                 }
 
         }
