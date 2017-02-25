@@ -42,6 +42,7 @@
     <Compile Include="Public\Get-CVJSONDateTime.ps1" />
     <Compile Include="Public\Get-CVServiceMap.ps1" />
     <Compile Include="Public\Get-CVServiceMapMachineList.ps1" />
+    <Compile Include="Public\Get-CVServiceMapMachineLiveness.ps1" />
     <Compile Include="Public\Get-CVServiceMapMachineName.ps1" />
     <Compile Include="Public\Get-CVServiceMapMachinesSummary.ps1" />
     <Compile Include="Public\Get-CVServiceMapSummary.ps1" />

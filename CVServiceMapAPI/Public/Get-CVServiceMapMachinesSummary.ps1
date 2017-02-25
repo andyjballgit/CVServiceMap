@@ -32,6 +32,7 @@
   v1.01 Andy Ball 19/02/2017 Add timestamp field /param 
   v1.02 Andy Ball 21/02/2017 Add MachineId to output
   v1.03 Andy Ball 22/02/2017 Add ShowsAllVMsStatus param 
+  v1.04 Andy Ball 25/02/2017 Change timestamp call so timestamp={utcdate} so it works
  
  .Parameter OMSWorkspaceName
   Name of OMS Workspace 
@@ -66,19 +67,15 @@ Function Get-CVServiceMapMachinesSummary
             [Parameter(Mandatory = $false, Position = 5)]  [string] $LocalTimeStamp 
 
         )
-
-    # ie silly date in the past so we get everything , 
-    # ToDo not 100% sure how date works , maybe should just do offset from Now().UTC>AddHours(-2) or something ..
-    # $uriSuffix = "/machines/?api-version=2015-11-01-preview&live=false&timestamp=2017-02-17T09:57:56.9366303Z"
-
+        
 
     $Resultset = @()
 
     $TimeStampSuffix = ""
     If([string]::IsNullOrWhiteSpace($LocalTimeStamp) -eq $false)
         {
-            $UTCLocalTimeStamp = Get-CVJSONDateTime -MyDateTime $LocalTimeStamp -ConvertToUTC $true
-            $TimeStampSuffix = "&" + $UTCLocalTimeStamp
+            $UTCTimeStamp = Get-CVJSONDateTime -MyDateTime $LocalTimeStamp -ConvertToUTC $true
+            $TimeStampSuffix = "&timestamp=" + $UTCTimeStamp
         }
          
 
@@ -92,8 +89,10 @@ Function Get-CVServiceMapMachinesSummary
         {
             $ret = Get-CVServiceMapWrapper -OMSWorkspaceName $OMSWorkspaceName -ResourceGroupName $ResourceGroupName -SubscriptionName $SubscriptionName -URISuffix $uriSuffix
         }
+    
+    
     $Resultset = $ret.value | Select @{Name = "ComputerName" ; Expression = {$_.Properties.ComputerName}}, 
-                          @{Name = "timestamp" ; Expression = {$_.Properties.timestamp}}, 
+                          @{Name = "LocalTimestamp" ; Expression = {$LocalTimeStamp}}, 
                         @{Name = "MachineName" ; Expression = {$_.name}}, 
                         @{Name = "FirstIPAddress" ; Expression = {$_.Properties.networking.ipv4Interfaces[0].ipAddress}}, 
                         @{Name = "UTCBootTime" ; Expression = {$_.Properties.bootTime}} , 

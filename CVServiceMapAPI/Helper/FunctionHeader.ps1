@@ -1,6 +1,6 @@
 ﻿<# 
  .Synopsis
-  Single line , succinct summary of what func does
+  Single line , succinct summary of what func does. Make sure this is a single line.
 
  .Description
  API Call - 

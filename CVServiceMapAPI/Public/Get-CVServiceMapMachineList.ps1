@@ -1,7 +1,6 @@
 ﻿<# 
  .Synopsis
  Generic function that calls either _ListPorts, _ListConnections or List_Processes depending on the ListType Param.
-  .
  .Description
  API Call - https://docs.microsoft.com/en-us/rest/api/servicemap/machines#Machines_ListPorts
   

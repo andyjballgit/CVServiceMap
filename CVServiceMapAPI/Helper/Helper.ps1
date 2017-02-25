@@ -1,6 +1,6 @@
 ﻿<# Helper.ps1 
 
-Helper / Unit type tests for Saervice Map APO calls 
+Helper / Unit type tests for Service Map APO calls 
 
 v1.00 Andy Ball 22/2/2017 Base Version
 #>
@@ -10,7 +10,7 @@ $ErrorActionPreference = "Stop"
 
 
 # Change these values
-$VMNames = @("Server1", "Server2")
+$VMNames = @("Server1")
 $SubscriptionName = "Live" 
 Select-AzureRmSubscription -SubscriptionName $SubscriptionName
 
@@ -39,12 +39,13 @@ Else
 $LocalEndTime = (Get-Date)
 $LocalStartTime = (Get-Date).AddMinutes(-50)
 
-$DoServiceMapRAW = $false 
-$DoServiceMapMachineLiveNess = $false 
+$DoServiceMapLiveness = $true
+$DoServiceMapLivenessRAW = $false
+$DoServiceMapMachineLiveNess = $true 
 $DoServiceMapConnectionsRAW = $false
 $DoServiceMapMachineSummaryRAW = $false 
 $DoServiceMapMachineSummary = $false
-$DoServiceMapSummary = $true
+$DoServiceMapSummary = $false
 $DoServiceMap = $false
 $DoServiceMapAll = $false
 $DoServiceMapConnections = $false
@@ -53,7 +54,7 @@ $DoMachineByNameWithDate = $false
 If ($DoServiceMapRAW)
 {
 
-     $uriSuffix = "/MachineGroups?api-version=2015-11-01-preview" 
+     $uriSuffix = "/machines/$VMName/liveness?api-version=2015-11-01-preview" 
         $ret = Get-CVServiceMapWrapper -OMSWorkspaceName $OMSWorkspaceName `
                                        -ResourceGroupName $ResourceGroupName `
                                        -SubscriptionName $SubscriptionName `
@@ -67,13 +68,26 @@ If ($DoServiceMapRAW)
     
 }
 
+If($DoServiceMapLiveness)
+    {
 
-If ($DoServiceMapMachineLiveNess)
+      $LocalEndTime = Get-Date 
+      $LocalStartTime = $LocalEndTime.AddMinutes(-61)
+  
+     $ret = Get-CVServiceMapMachineLiveness -OMSWorkspaceName $OMSWorkspaceName -ResourceGroupName $ResourceGroupName -SubscriptionName $SubscriptionName -LocalStartTime $LocalStartTime -LocalEndTime $LocalEndTime
+     $ret
+
+    }
+
+If ($DoServiceMapMachineLiveNessRAW)
     {
         # Lookup "unfriendly" ServiceMap MachineName based on VMName
         $MachineName = Get-CVServiceMapMachineName -OMSWorkspaceName $OMSWorkspaceName -ResourceGroupName $ResourceGroupName -VMName $VMName -SubscriptionName $SubscriptionName
 
-        $uriSuffix = "/machines/$MachineName/liveness?api-version=2015-11-01-preview"
+        $EndTime = Get-CVJSONDateTime -MyDateTime $LocalEndTime -ConvertToUTC $true 
+        $StartTime = Get-CVJSONDateTime -MyDateTime $LocalStartTime -ConvertToUTC $true 
+
+        $uriSuffix = "/machines/$MachineName/liveness?api-version=2015-11-01-preview&startTime=$StartTime&endTime=$EndTime"
         $ret = Get-CVServiceMapWrapper -OMSWorkspaceName $OMSWorkspaceName `
                                        -ResourceGroupName $ResourceGroupName `
                                        -SubscriptionName $SubscriptionName `
