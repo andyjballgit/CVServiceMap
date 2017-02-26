@@ -1,3 +1,6 @@
+## 26.02.2017 Version 0.19
+* Bug fixes
+
 ## 22.02.2017 Version 0.18
 * Start/Endtime working in Get-SVServiceMapWrapper
 

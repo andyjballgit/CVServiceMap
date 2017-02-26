@@ -8,7 +8,7 @@
   -----------
   AzureRM Modules - tested on 3.4 
   Get-CVAzureRESTAuthHeader func
-  Get-CVServiceMapMachinesSummary
+  Get-CVServiceMapMachineSummary
 
   Returns 
   -------
@@ -57,11 +57,11 @@ Function Get-CVServiceMapMachineName
     $MachineName = $null
     If([string]::IsNullOrWhiteSpace($SubscriptionName))
         { 
-            $AllMachines =  Get-CVServiceMapMachinesSummary -OMSWorkspaceName $OMSWorkspaceName -ResourceGroupName $ResourceGroupName
+            $AllMachines =  Get-CVServiceMapMachineSummary -OMSWorkspaceName $OMSWorkspaceName -ResourceGroupName $ResourceGroupName
         }
     Else
         {
-            $AllMachines =  Get-CVServiceMapMachinesSummary -OMSWorkspaceName $OMSWorkspaceName -ResourceGroupName $ResourceGroupName -SubscriptionName $SubscriptionName
+            $AllMachines =  Get-CVServiceMapMachineSummary -OMSWorkspaceName $OMSWorkspaceName -ResourceGroupName $ResourceGroupName -SubscriptionName $SubscriptionName
         }
 
 

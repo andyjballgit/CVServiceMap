@@ -30,7 +30,8 @@
   v1.01 Andy Ball 19/02/2017 Add GetMethod param so can use custom code to get the map 
   v1.02 Andy Ball 20/02/2017 Change JSON payload to MachineId
   v1.03 Andy Ball 21/02/2017 Changet to actually use .Id for MachineId (was incorrectly using MachineName)
-  v1.04 Andy Ball 22/02/2017 Remove param , add progress when rolling through VMs
+  v1.04 Andy Ball 22/02/2017 Remove param , add progress when rolling through VM
+  v1.05 Andy Ball 23/02/2017 Changed output so uses machineid not name
  
  .Parameter OMSWorkspaceName
   Name of OMS Workspace 
@@ -74,7 +75,9 @@ Function Get-CVServiceMap
             [Parameter(Mandatory = $true, Position = 1)]  [string] $ResourceGroupName ,
             [Parameter(Mandatory = $false, Position = 2)]  [string] $SubscriptionName, 
             [Parameter(Mandatory = $false, Position = 3)]  [string[]] $VMNames, 
-            [Parameter(Mandatory = $false, Position = 5)]  [string] [ValidateSet("map:single-Machine-dependency",  "map:machine-group-dependency")] $MapType = "map:single-Machine-dependency"
+            [Parameter(Mandatory = $false, Position = 5)]  [string] [ValidateSet("map:single-Machine-dependency",  "map:machine-group-dependency")] $MapType = "map:single-Machine-dependency", 
+            [Parameter(Mandatory = $false, Position = 6)]  [datetime] $LocalStartTime, 
+            [Parameter(Mandatory = $false, Position = 7)]  [datetime] $LocalEndTime
 
         )
 
@@ -88,10 +91,7 @@ Function Get-CVServiceMap
             Break
         }
       
-    $StartTime = $EndTime.AddMinutes(-10)
 
-    $strEndTime = Get-CVJSONDateTime -MyDateTime $EndTime
-    $strStartTime = Get-CVJSONDateTime -MyDateTime $StartTime
     
 
     # ToDo Refactor
@@ -99,7 +99,7 @@ Function Get-CVServiceMap
         {
 
             Write-Verbose "VMNames param is null , getting all active VMs"
-            $AllMachines = Get-CVServiceMapMachinesSummary -OMSWorkspaceName $OMSWorkspaceName -ResourceGroupName $ResourceGroupName -SubscriptionName $SubscriptionName
+            $AllMachines = Get-CVServiceMapMachineSummary -OMSWorkspaceName $OMSWorkspaceName -ResourceGroupName $ResourceGroupName -SubscriptionName $SubscriptionName
             $VMNames = @()
             ForEach($VMName in $AllMachines.ComputerName)
                 {
@@ -108,11 +108,38 @@ Function Get-CVServiceMap
         } 
 
 
+  # ie if not past set to the default
+    If (([string]::IsNullOrWhiteSpace($LocalEndTime)) -AND ([string]::IsNullOrWhiteSpace($LocalStartTime)))
+        {
+            Write-Verbose "Using default 10 mins"
+            $Now = Get-Date
+            $LocalEndTime = $Now 
+            $LocalStartTime = $Now.AddMinutes(-10)
+        }  
+    Else
+        {
+            # 25th Feb 2017 we have a range so need to check not > 60 mins otherwise will get "invalid time range" as currently 60 mins the max
+            $Timespan = New-TimeSpan -Start $LocalStartTime -End $LocalEndTime
+            If($Timespan.TotalSeconds -gt 3600)
+               {
+                   Write-Warning "Error : Maximum difference between LocalStartTime($LocalStartTime) And LocalEndTime($LocalEndTime) is 60 mins. Quitting"
+                   Break
+               }
+        }
+    
+
+    # used in JSON Payload / POST
+    $strEndTime = Get-CVJSONDateTime -MyDateTime $LocalEndTime -ConvertToUTC $true 
+    $strStartTime = Get-CVJSONDateTime -MyDateTime $LocalStartTime -ConvertToUTC $true
+
+    # Get here so we don't have to call per VM 
+    $AuthHeader = Get-CVAzureRESTAuthHeader 
+
     $Resultset = @()
     $VMsCount = @($VMNames).Count
     $CurrentVMNum = 1 
 
-    $AllMachines = Get-CVServiceMapMachinesSummary -OMSWorkspaceName $OMSWorkspaceName -ResourceGroupName $ResourceGroupName -SubscriptionName $SubscriptionName
+    $AllMachines = Get-CVServiceMapMachineSummary -OMSWorkspaceName $OMSWorkspaceName -ResourceGroupName $ResourceGroupName -SubscriptionName $SubscriptionName
     ForEach($VMName in $VMNames)
                 {
                     $ret = $null 
@@ -127,9 +154,10 @@ Function Get-CVServiceMap
                         }
                     Else
                         {
-                            $MachineName = $MachineNameRecord.MachineName 
+                            $MachineName = $MachineNameRecord.MachineName
+                            $MachineId = $MachineNameRecord.MachineId 
                             $objBody = $Host | Select @{Name = "kind" ; Expression = {$MapType}} , 
-                                                      @{Name = "machineId"; Expression = {$MachineNameRecord.MachineId}},
+                                                      @{Name = "machineId"; Expression = {$MachineId}},
                                                       @{Name = "startTime" ; Expression = {$strStartTime}}, 
                                                       @{Name = "endTime" ; Expression = {$strEndTime}}
                                                      
@@ -137,11 +165,11 @@ Function Get-CVServiceMap
                             Write-Verbose -Message $JSONBody
 
                             $uriSuffix = "/generateMap?api-version=2015-11-01-preview" 
-                            Write-Host ("Generating Service Map type = $MapType, With machineId = $MachinName from $StartTime to $EndTime @ " + (Get-Date))
+                            Write-Host ("Generating Service Map type = $MapType, With machineId = $MachineId from $StartTime to $EndTime @ " + (Get-Date))
                             
                             try
                                 {
-                                    $ret = Get-CVServiceMapWrapper -URISuffix $uriSuffix -OMSWorkspaceName $OMSWorkspaceName -ResourceGroupName $ResourceGroupName -SubscriptionName $SubscriptionName -RESTMethod POST -Body $JSONBody 
+                                    $ret = Get-CVServiceMapWrapper -URISuffix $uriSuffix -OMSWorkspaceName $OMSWorkspaceName -ResourceGroupName $ResourceGroupName -SubscriptionName $SubscriptionName -RESTMethod POST -Body $JSONBody -AzureRestHeader $AuthHeader
                                 }
                             catch
                                 {

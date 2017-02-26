@@ -33,6 +33,7 @@
   v1.02 Andy Ball 21/02/2017 Add MachineId to output
   v1.03 Andy Ball 22/02/2017 Add ShowsAllVMsStatus param 
   v1.04 Andy Ball 25/02/2017 Change timestamp call so timestamp={utcdate} so it works
+  v1.05 Andy Ball 26/02/2017 Switch back to original Subscription that had focus when entered, if we end up in a different 
  
  .Parameter OMSWorkspaceName
   Name of OMS Workspace 
@@ -50,12 +51,12 @@
  When specified gets info for this date time. Pass local time , will be converted to UTC time into API
 
  .Example
-  $ret = Get-CVServiceMapMachinesSummary -OMSWorkspaceName "MyWorkspaceName" -ResourceGroupName "ItsRGName" 
+  $ret = Get-CVServiceMapMachineSummary -OMSWorkspaceName "MyWorkspaceName" -ResourceGroupName "ItsRGName" 
   $ret | ft 
  
 
 #>
-Function Get-CVServiceMapMachinesSummary
+Function Get-CVServiceMapMachineSummary
 {
     Param
         (
@@ -70,6 +71,9 @@ Function Get-CVServiceMapMachinesSummary
         
 
     $Resultset = @()
+
+    # do this so we can switch back at end
+    $OriginalSubscriptionName = (Get-AzureRmContext).Subscription.SubscriptionName
 
     $TimeStampSuffix = ""
     If([string]::IsNullOrWhiteSpace($LocalTimeStamp) -eq $false)
@@ -144,6 +148,15 @@ Function Get-CVServiceMapMachinesSummary
                                 @{Name = "MachineId" ; Expression = {"N\A"}}
                         }
                 }
+        }
+
+    
+    # Switch back to original SubscriptionName if current not same 
+    $CurrentSubscriptionName =  (Get-AzureRmContext).Subscription.SubscriptionName
+    If ($CurrentSubscriptionName -ne $OriginalSubscriptionName)
+        {
+            Write-Host "reSelecting SubscriptionName = $OriginalSubscriptionName (from $CurrentSubscriptionName)"
+            $Sub = Select-AzureRmSubscription -SubscriptionName $OriginalSubscriptionName
         }
     # Finally return
     $Resultset | Sort ComputerName

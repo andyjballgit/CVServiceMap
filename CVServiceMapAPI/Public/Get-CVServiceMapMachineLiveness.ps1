@@ -24,7 +24,7 @@
  Change Log
  ----------
  v1.00 Andy Ball 25/02/2017 Base Version
-
+ v1.01 Andy Ball 26/02/2017 Warn / bombout if no machines
 
  .Parameter OMSWorkspaceName
  OMS Workspace name where Service Map is queries
@@ -91,29 +91,7 @@ Function Get-CVServiceMapMachineLiveness
     $Resultset = @()
 
     #ToDo Refactor ? 
-
-
-
-    #Get all Machines here so we can use it as a lookup table of ComputerName to Service Map Machine Name 
-    Write-Host "Getting All Machines for lookup table"
-    $AllMachines = Get-CVServiceMapMachinesSummary -OMSWorkspaceName $OMSWorkspaceName -ResourceGroupName $ResourceGroupName -SubscriptionName $SubscriptionName
-
-    If ([string]::IsNullOrWhiteSpace($VMNames))
-        {
-            $VMNames = @()
-            ForEach($VMName in $AllMachines.ComputerName)
-                {
-                    $VMNames += $VMName
-                }
-        } 
-
-    $VMsCount = @($VMNames).Count
-    [int] $CurrentVMNum = 1
-
-    # Get here so we don't have to call per VM 
-    $AuthHeader = Get-CVAzureRESTAuthHeader 
-
-    # ie if not past set to the default
+        # ie if not past set to the default
     If (([string]::IsNullOrWhiteSpace($LocalEndTime)) -AND ([string]::IsNullOrWhiteSpace($LocalStartTime)))
         {
             Write-Verbose "Using default 10 mins"
@@ -132,6 +110,35 @@ Function Get-CVServiceMapMachineLiveness
                 }
         }
         
+
+
+    #Get all Machines here so we can use it as a lookup table of ComputerName to Service Map Machine Name 
+    Write-Host "Getting All Machines for lookup table"
+    $AllMachines = Get-CVServiceMapMachineSummary -OMSWorkspaceName $OMSWorkspaceName -ResourceGroupName $ResourceGroupName -SubscriptionName $SubscriptionName -LocalTimeStamp $LocalStartTime
+
+    If ($AllMachines -eq $null)
+        {
+            Write-Warning "Unable to find any Service Map Machines, they may all be switched off"
+        }
+
+
+    If ([string]::IsNullOrWhiteSpace($VMNames))
+        {
+            $VMNames = @()
+            ForEach($VMName in $AllMachines.ComputerName)
+                {
+                    $VMNames += $VMName
+                }
+        } 
+
+    $VMsCount = @($VMNames).Count
+    [int] $CurrentVMNum = 1
+
+    
+    # Get here so we don't have to call per VM 
+    $AuthHeader = Get-CVAzureRESTAuthHeader
+
+
    
     ForEach ($VMName in $VMNames)
     {

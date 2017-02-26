@@ -44,7 +44,7 @@
     <Compile Include="Public\Get-CVServiceMapMachineList.ps1" />
     <Compile Include="Public\Get-CVServiceMapMachineLiveness.ps1" />
     <Compile Include="Public\Get-CVServiceMapMachineName.ps1" />
-    <Compile Include="Public\Get-CVServiceMapMachinesSummary.ps1" />
+    <Compile Include="Public\Get-CVServiceMapMachineSummary.ps1" />
     <Compile Include="Public\Get-CVServiceMapSummary.ps1" />
     <Compile Include="Public\Get-CVServiceMapWrapper.ps1" />
     <Compile Include="Public\Get-CVMarkDownFileForCmdLets.ps1" />

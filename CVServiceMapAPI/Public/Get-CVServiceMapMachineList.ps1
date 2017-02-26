@@ -26,6 +26,7 @@
  v1.00 Andy Ball 18/02/2017 Base Version
  v1.02 Andy Ball 19/02/2017 Fix minor bugs with counting VMs 
  v1.03 Andy Ball 19/02/2017 Add list type , LocalStart/Endtime params
+ v1.04 Andy Ball 26/02/2017 Output list of Machines 
 
  .Parameter OMSWorkspaceName
  a
@@ -80,7 +81,7 @@ Function Get-CVServiceMapMachineList
 
     #Get all Machines here so we can use it as a lookup table of ComputerName to Service Map Machine Name 
     Write-Host "Getting All Machines for lookup table"
-    $AllMachines = Get-CVServiceMapMachinesSummary -OMSWorkspaceName $OMSWorkspaceName -ResourceGroupName $ResourceGroupName -SubscriptionName $SubscriptionName
+    $AllMachines = Get-CVServiceMapMachineSummary -OMSWorkspaceName $OMSWorkspaceName -ResourceGroupName $ResourceGroupName -SubscriptionName $SubscriptionName
 
     If ([string]::IsNullOrWhiteSpace($VMNames))
         {
@@ -119,7 +120,8 @@ Function Get-CVServiceMapMachineList
         # Barf if lookup fails, Get-CVServiceMapMachineName outputs the warning
         If ($VMNameRecord -eq $null)
             {
-                Write-Warning "`tCant find VMName = $VMName in List of All Service Map Machines"
+                Write-Warning "`tCant find VMName = $VMName in List of All Service Map Machines:"
+                $AllMachines | Out-String
                 Break
             }
 

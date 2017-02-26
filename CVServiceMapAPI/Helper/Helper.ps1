@@ -5,12 +5,14 @@ Helper / Unit type tests for Service Map APO calls
 v1.00 Andy Ball 22/2/2017 Base Version
 #>
 
-Import-Module C:\Workarea\Repos\CVServiceMapAPI\CVServiceMapAPI\CVServiceMapAPI -Force -Verbose
 $ErrorActionPreference = "Stop"
+Import-Module C:\Workarea\Repos\CVServiceMapAPI\CVServiceMapAPI\CVServiceMapAPI -Force -Verbose
 
 
 # Change these values
-$VMNames = @("Server1")
+$VMNames = @("LBE-SH-WAS-016")
+$VMName = "LBE-SH-WAS-016"
+
 $SubscriptionName = "Live" 
 Select-AzureRmSubscription -SubscriptionName $SubscriptionName
 
@@ -37,19 +39,26 @@ Else
     }
 
 $LocalEndTime = (Get-Date)
-$LocalStartTime = (Get-Date).AddMinutes(-50)
+$LocalStartTime = (Get-Date).AddMinutes(-61)
 
-$DoServiceMapLiveness = $true
-$DoServiceMapLivenessRAW = $false
-$DoServiceMapMachineLiveNess = $true 
-$DoServiceMapConnectionsRAW = $false
-$DoServiceMapMachineSummaryRAW = $false 
+
+$DoServiceMapLiveness = $false
+$DoServiceMapMachineLiveNess = $false
 $DoServiceMapMachineSummary = $false
 $DoServiceMapSummary = $false
 $DoServiceMap = $false
 $DoServiceMapAll = $false
 $DoServiceMapConnections = $false
+$DoServiceMapPorts = $false
+$DoServiceMapProcesses = $false
+
 $DoMachineByNameWithDate = $false 
+
+$DoServiceMapLivenessRAW = $False
+$DoServiceMapConnectionsRAW = $false
+$DoServiceMapMachineSummaryRAW = $false 
+$DoServiceMapMachineGroupsRAW = $true
+
 
 If ($DoServiceMapRAW)
 {
@@ -71,21 +80,131 @@ If ($DoServiceMapRAW)
 If($DoServiceMapLiveness)
     {
 
-      $LocalEndTime = Get-Date 
-      $LocalStartTime = $LocalEndTime.AddMinutes(-61)
-  
+     Write-Host ("*** Running DoServiceMapLiveness @ " + (Get-Date)) -ForegroundColor Magenta
      $ret = Get-CVServiceMapMachineLiveness -OMSWorkspaceName $OMSWorkspaceName -ResourceGroupName $ResourceGroupName -SubscriptionName $SubscriptionName -LocalStartTime $LocalStartTime -LocalEndTime $LocalEndTime
      $ret
 
     }
 
-If ($DoServiceMapMachineLiveNessRAW)
+If ($DoServiceMapMachineSummary)
     {
+
+        Write-Host ("*** Running DoServiceMapMachineSummary @ " + (Get-Date)) -ForegroundColor Magenta
+        $LocalTimestamp = (Get-Date).AddDays(-10)
+        $VMStatusSubscriptionNames = @("Converted Windows Azure MSDN - Visual Studio Ultimate")
+        Get-CVServiceMapMachineSummary -OMSWorkspaceName $OMSWorkspaceName `
+                                        -ResourceGroupName $ResourceGroupName `
+                                        -SubscriptionName $SubscriptionName `
+                                        -ShowAllVMsStatus $true `
+                                        -VMsStatusSubscriptionNames $VMStatusSubscriptionNames `
+                                        -LocalTimeStamp $LocalTimestamp | Export-CSV -Path "c:\temp\MachineNames.csv" -Force -NoTypeInformation
+        . "c:\temp\MachineNames.csv"
+    }
+
+If ($DoServiceMapSummary)
+    {
+        Write-Host ("*** Running DoServiceMapSummary @ " + (Get-Date)) -ForegroundColor Magenta
+        $ret = Get-CVServiceMapSummary -OMSWorkspaceName $OMSWorkspaceName -ResourceGroupName $ResourceGroupName -LocalStartTime $LocalStartTime -LocalEndTime $LocalEndTime 
+        $ret 
+    }
+
+If($DoServiceMap)
+    {
+       Write-Host ("*** Running DoServiceMap @ " + (Get-Date)) -ForegroundColor Magenta
+       $ret = Get-CVServiceMap -VMName $VMNames -SubscriptionName $SubscriptionName -OMSWorkspaceName $OMSWorkspaceName -ResourceGroupName $ResourceGroupName -MapType map:single-Machine-dependency -LocalStartTime $LocalStartTime -LocalEndTime $LocalEndTime
+       $ret | ConvertTo-JSON -Depth 100 | Out-File "c:\temp\ServiceMap\ServiceMap.json"
+       Code "c:\temp\ServiceMap\ServiceMap.json"
+    }
+
+If($DoServiceMapAll)
+    {
+       Write-Host ("*** Running DoServiceMapAll @ " + (Get-Date)) -ForegroundColor Magenta
+       $ret = Get-CVServiceMap -SubscriptionName $SubscriptionName -OMSWorkspaceName $OMSWorkspaceName -ResourceGroupName $ResourceGroupName -MapType map:single-Machine-dependency 
+       $ret | ConvertTo-JSON -Depth 100 | Out-File "c:\temp\ServiceMap\ServiceMapAll.json"
+       Code "c:\temp\ServiceMap\ServiceMapAll.json"
+    }
+
+
+If($DoServiceMapConnections)
+    {
+        Write-Host ("*** Running DoServiceMapConnections @ " + (Get-Date)) -ForegroundColor Magenta
+        $ret = Get-CVServiceMapMachineList -SubscriptionName $SubscriptionName `
+                                                -OMSWorkspaceName $OMSWorkspaceName `
+                                                -ResourceGroupName $ResourceGroupName `
+                                                -ListType Connections `
+                                                -VMNames $VMNames `
+                                                -LocalStartTime $LocalStartTime `
+                                                -LocalEndTime $LocalEndTime
+        $ret | fl
+        #$ret.properties | convertto-json -Depth 100 | Out-File "c:\temp\ServiceMap\Connections.json"
+        #code "c:\temp\ServiceMap\Connections.json"
+    }
+
+If($DoServiceMapPorts)
+    {
+        Write-Host ("*** Running DoServiceMapPorts @ " + (Get-Date)) -ForegroundColor Magenta
+        $ret = Get-CVServiceMapMachineList -SubscriptionName $SubscriptionName `
+                                                -OMSWorkspaceName $OMSWorkspaceName `
+                                                -ResourceGroupName $ResourceGroupName `
+                                                -ListType Ports `
+                                                -VMNames $VMNames `
+                                                -LocalStartTime $LocalStartTime `
+                                                -LocalEndTime $LocalEndTime
+        $ret | fl
+        #$ret.properties | convertto-json -Depth 100 | Out-File "c:\temp\ServiceMap\Connections.json"
+        #code "c:\temp\ServiceMap\Connections.json"
+    }
+
+If($DoServiceMapProcesses)
+    {
+        Write-Host ("*** Running DoServiceMapProcesses @ " + (Get-Date)) -ForegroundColor Magenta
+        $ret = Get-CVServiceMapMachineList -SubscriptionName $SubscriptionName `
+                                                -OMSWorkspaceName $OMSWorkspaceName `
+                                                -ResourceGroupName $ResourceGroupName `
+                                                -ListType Processes `
+                                                -VMNames $VMNames `
+                                                -LocalStartTime $LocalStartTime `
+                                                -LocalEndTime $LocalEndTime
+        $ret | fl
+        #$ret.properties | convertto-json -Depth 100 | Out-File "c:\temp\ServiceMap\Connections.json"
+        #code "c:\temp\ServiceMap\Connections.json"
+    }
+
+
+
+If($DoMachineByNameWithDate)
+    {
+        Write-Host ("*** Running DoServiceMapMachineSummary @ " + (Get-Date)) -ForegroundColor Magenta
+        # Change these $LocalStartTime = (Get-Date).AddDays(-5)
+        $LocalEndTime = Get-Date 
+
         # Lookup "unfriendly" ServiceMap MachineName based on VMName
         $MachineName = Get-CVServiceMapMachineName -OMSWorkspaceName $OMSWorkspaceName -ResourceGroupName $ResourceGroupName -VMName $VMName -SubscriptionName $SubscriptionName
 
-        $EndTime = Get-CVJSONDateTime -MyDateTime $LocalEndTime -ConvertToUTC $true 
-        $StartTime = Get-CVJSONDateTime -MyDateTime $LocalStartTime -ConvertToUTC $true 
+        # call API
+        $uriSuffix = "/machines/$MachineName/processes?api-version=2015-11-01-preview" 
+        $ret = Get-CVServiceMapWrapper -OMSWorkspaceName $OMSWorkspaceName `
+                                       -ResourceGroupName $ResourceGroupName `
+                                       -SubscriptionName $SubscriptionName `
+                                       -ReturnType JSON `
+                                       -URISuffix $uriSuffix `
+                                       -LocalStartTime $LocalStartTime `
+                                       -LocalEndTime $LocalEndTime 
+                               
+
+        $ret 
+    }
+
+
+
+If ($DoServiceMapLiveNessRAW)
+    {
+        Write-Host ("*** Running $DoServiceMapLiveNessRAW @ " + (Get-Date)) -ForegroundColor Magenta
+        # Lookup "unfriendly" ServiceMap MachineName based on VMName
+        $MachineName = Get-CVServiceMapMachineName -OMSWorkspaceName $OMSWorkspaceName -ResourceGroupName $ResourceGroupName -VMName $VMName -SubscriptionName $SubscriptionName
+
+        #$EndTime = Get-CVJSONDateTime -MyDateTime $LocalEndTime -ConvertToUTC $true 
+        #$StartTime = Get-CVJSONDateTime -MyDateTime $LocalStartTime -ConvertToUTC $true 
 
         $uriSuffix = "/machines/$MachineName/liveness?api-version=2015-11-01-preview&startTime=$StartTime&endTime=$EndTime"
         $ret = Get-CVServiceMapWrapper -OMSWorkspaceName $OMSWorkspaceName `
@@ -139,78 +258,16 @@ If ($DoServiceMapConnectionsRAW)
         Code $JSONOutputFileName
     }
 
-
-If ($DoServiceMapMachineSummary)
+If ($DoServiceMapMachineGroupsRAW)
     {
-        $LocalTimestamp = (Get-Date).AddDays(-10)
-        $VMStatusSubscriptionNames = @("Non-Live")
-        Get-CVServiceMapMachinesSummary -OMSWorkspaceName $OMSWorkspaceName `
-                                        -ResourceGroupName $ResourceGroupName `
-                                        -SubscriptionName $SubscriptionName `
-                                        -ShowAllVMsStatus $true `
-                                        -VMsStatusSubscriptionNames $VMStatusSubscriptionNames `
-                                        -LocalTimeStamp $LocalTimestamp | Export-CSV -Path "c:\temp\MachineNames.csv" -Force -NoTypeInformation
-        . "c:\temp\MachineNames.csv"
-    }
-
-If ($DoServiceMapSummary)
-    {
-        $ret = Get-CVServiceMapSummary -OMSWorkspaceName $OMSWorkspaceName -ResourceGroupName $ResourceGroupName -LocalStartTime $LocalStartTime -LocalEndTime $LocalEndTime 
-        $ret 
-    }
-
-If($DoServiceMap)
-    {
-       $ret = Get-CVServiceMap -VMName $VMNames-SubscriptionName $SubscriptionName -OMSWorkspaceName $OMSWorkspaceName -ResourceGroupName $ResourceGroupName -MapType map:single-Machine-dependency
-       $ret | ConvertTo-JSON -Depth 100 | Out-File "c:\temp\ServiceMap\ServiceMap.json"
-       Code "c:\temp\ServiceMap\ServiceMap.json"
-    }
-
-If($DoServiceMapAll)
-    {
-       $ret = Get-CVServiceMap -SubscriptionName $SubscriptionName -OMSWorkspaceName $OMSWorkspaceName -ResourceGroupName $ResourceGroupName -MapType map:single-Machine-dependency
-       $ret | ConvertTo-JSON -Depth 100 | Out-File "c:\temp\ServiceMap\ServiceMapAll.json"
-       Code "c:\temp\ServiceMap\ServiceMapAll.json"
-    }
-
-
-If($DoServiceMapConnections)
-    {
-        $ret = Get-CVServiceMapMachineList -SubscriptionName $SubscriptionName `
-                                                -OMSWorkspaceName $OMSWorkspaceName `
-                                                -ResourceGroupName $ResourceGroupName `
-                                                -ListType Connections `
-                                                -VMNames $VMNames `
-                                                -LocalStartTime $LocalStartTime `
-                                                -LocalEndTime $LocalEndTime
-        $ret | fl
-        #$ret.properties | convertto-json -Depth 100 | Out-File "c:\temp\ServiceMap\Connections.json"
-        #code "c:\temp\ServiceMap\Connections.json"
-    }
-
-If($DoMachineByNameWithDate)
-    {
-
-        # Change these
-   
-        $LocalStartTime = (Get-Date).AddDays(-5)
-        $LocalEndTime = Get-Date 
-
-        # Lookup "unfriendly" ServiceMap MachineName based on VMName
-        $MachineName = Get-CVServiceMapMachineName -OMSWorkspaceName $OMSWorkspaceName -ResourceGroupName $ResourceGroupName -VMName $VMName -SubscriptionName $SubscriptionName
-
-        # call API
-        $uriSuffix = "/machines/$MachineName/processes?api-version=2015-11-01-preview" 
+      $uriSuffix = "/machineGroups?api-version=2015-11-01-preview" 
         $ret = Get-CVServiceMapWrapper -OMSWorkspaceName $OMSWorkspaceName `
                                        -ResourceGroupName $ResourceGroupName `
                                        -SubscriptionName $SubscriptionName `
-                                       -ReturnType JSON `
                                        -URISuffix $uriSuffix `
-                                       -LocalStartTime $LocalStartTime `
-                                       -LocalEndTime $LocalEndTime 
-                               
+                                       -ReturnType JSON 
 
-        $ret 
+        $re
+                                              
+
     }
-
-
