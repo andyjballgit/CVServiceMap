@@ -10,8 +10,8 @@ Import-Module C:\Workarea\Repos\CVServiceMapAPI\CVServiceMapAPI\CVServiceMapAPI 
 
 
 # Change these values
-$VMNames = @("LBE-SH-WAS-016")
-$VMName = "LBE-SH-WAS-016"
+$VMNames = @("SomeServer")
+$VMName = "Someserver"
 
 $SubscriptionName = "Live" 
 Select-AzureRmSubscription -SubscriptionName $SubscriptionName
@@ -39,7 +39,7 @@ Else
     }
 
 $LocalEndTime = (Get-Date)
-$LocalStartTime = (Get-Date).AddMinutes(-61)
+$LocalStartTime = (Get-Date).AddMinutes(-60)
 
 
 $DoServiceMapLiveness = $false
@@ -57,8 +57,31 @@ $DoMachineByNameWithDate = $false
 $DoServiceMapLivenessRAW = $False
 $DoServiceMapConnectionsRAW = $false
 $DoServiceMapMachineSummaryRAW = $false 
-$DoServiceMapMachineGroupsRAW = $true
+$DoServiceMapMachineGroupsRAW = $false
+$DoGetConnectionsFromProcess = $true 
 
+If ($DoGetConnectionsFromProcess)
+    {
+        $MachineName = Get-CVServiceMapMachineName -OMSWorkspaceName $OMSWorkspaceName -ResourceGroupName $ResourceGroupName -SubscriptionName $SubscriptionName -VMName $VMName
+        $MachineName 
+        $ResourceName = "MicrosoftDependencyAgent:5d088927:a582f539:0:28ca2366"
+
+        $uri = "/machines/$machinename/processes" + "?api-version=2015-11-01-preview" 
+        $res = Get-CVServiceMapWrapper  -OMSWorkspaceName $OMSWorkspaceName -ResourceGroupName $ResourceGroupName -SubscriptionName $SubscriptionName -URISuffix $uri -RESTMethod GET -ReturnType PSObject
+   
+
+        $ProcessName = "p-9658bb1959ff2a532feb37d73ed33c56207584f5"
+
+        # $ProcessName =  "p-a0968afbe7eb4c53459461d3f5a14dbf3581ded0"
+        $uri = "/machines/$machinename/Processes/$ProcessName/Connections" + "?api-version=2015-11-01-preview" 
+        
+        $Connections = Get-CVServiceMapWrapper  -OMSWorkspaceName $OMSWorkspaceName -ResourceGroupName $ResourceGroupName -SubscriptionName $SubscriptionName -URISuffix $uri -RESTMethod GET -ReturnType PSObject
+        $Connections
+
+        #$res | ConvertTo-Json -Depth 100 | Out-File "c:\temp\Process.json" 
+        #code  "c:\temp\Process.json" 
+        Break
+    }
 
 If ($DoServiceMapRAW)
 {
@@ -135,9 +158,10 @@ If($DoServiceMapConnections)
                                                 -VMNames $VMNames `
                                                 -LocalStartTime $LocalStartTime `
                                                 -LocalEndTime $LocalEndTime
-        $ret | fl
-        #$ret.properties | convertto-json -Depth 100 | Out-File "c:\temp\ServiceMap\Connections.json"
-        #code "c:\temp\ServiceMap\Connections.json"
+        $ret | ft
+        #ret.properties | convertto-json -Depth 100 | Out-File "c:\temp\ServiceMap\Connections.json"
+        # code "c:\temp\ServiceMap\Connections.json"
+        $ret | Export-CSV -Path "c:\temp\Connections.csv" -Force -NoTypeInformation 
     }
 
 If($DoServiceMapPorts)
@@ -150,7 +174,8 @@ If($DoServiceMapPorts)
                                                 -VMNames $VMNames `
                                                 -LocalStartTime $LocalStartTime `
                                                 -LocalEndTime $LocalEndTime
-        $ret | fl
+        $ret | ft
+        $ret | Export-CSV -Path "c:\temp\Ports.csv" -Force -NoTypeInformation 
         #$ret.properties | convertto-json -Depth 100 | Out-File "c:\temp\ServiceMap\Connections.json"
         #code "c:\temp\ServiceMap\Connections.json"
     }
@@ -168,6 +193,10 @@ If($DoServiceMapProcesses)
         $ret | fl
         #$ret.properties | convertto-json -Depth 100 | Out-File "c:\temp\ServiceMap\Connections.json"
         #code "c:\temp\ServiceMap\Connections.json"
+        
+        $ret | export-csv -Path "c:\temp\Process.csv" -Force -NoTypeInformation
+        . "c:\temp\Process.csv"
+
     }
 
 

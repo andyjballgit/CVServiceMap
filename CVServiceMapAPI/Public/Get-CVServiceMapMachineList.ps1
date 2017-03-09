@@ -27,9 +27,10 @@
  v1.02 Andy Ball 19/02/2017 Fix minor bugs with counting VMs 
  v1.03 Andy Ball 19/02/2017 Add list type , LocalStart/Endtime params
  v1.04 Andy Ball 26/02/2017 Output list of Machines 
+ v1.05 Andy Ball 08/03/2017 Add Persistent key which is used between Ports, Connections etc  to link together
 
  .Parameter OMSWorkspaceName
- a
+ ToDo
  
  .Parameter ResourceGroupName
  a
@@ -157,7 +158,8 @@ Function Get-CVServiceMapMachineList
                                              @{Name = "DisplayName" ; Expression = {$_.properties.displayName}},
                                              @{Name = "IPAddress" ; Expression = {$_.properties.ipAddress}},
                                              @{Name = "PortNumber" ; Expression = {$_.properties.PortNumber}}, 
-                                             @{Name = "MachineName" ; Expression = {$MachineName}}
+                                             @{Name = "MachineName" ; Expression = {$MachineName}},
+                                             @{Name = "persistantKey" ; Expression = {$_.properties.details.persistentkey}}
                             }
 
                         "Connections"
@@ -171,7 +173,8 @@ Function Get-CVServiceMapMachineList
                                                                  @{Name = "ServerPortType" ; Expression = {$_.properties.ServerPort.kind}}, 
                                                                  @{Name = "ServerPort" ; Expression = {$_.properties.ServerPort.properties.portNumber}}, 
                                                                  @{Name = "DestIPAddresses" ; Expression = {$_.properties.ServerPort.properties.ipAddress}} , 
-                                                                 @{Name = "FailureState" ; Expression = {$_.properties.FailureState}}
+                                                                 @{Name = "FailureState" ; Expression = {$_.properties.FailureState}},
+                                                                 @{Name = "persistantKey" ; Expression = {$_.properties.details.persistentkey}}
 
                                                                   
 
@@ -188,7 +191,12 @@ Function Get-CVServiceMapMachineList
                                                                  @{Name = "ProductName" ; Expression = {$_.properties.details.productName}} , 
                                                                  @{Name = "ProductVersion" ; Expression = {$_.properties.details.productVersion}},
                                                                  @{Name = "RunAsUser" ; Expression = {$_.properties.user.userDomain + "\" + $_.properties.user.userName}},
-                                                                 @{Name = "CommandLine" ; Expression = {$_.properties.details.CommandLine}}     
+                                                                 @{Name = "poolid" ; Expression = {$_.properties.details.poolid}},
+                                                                 @{Name = "InternalName" ; Expression = {$_.properties.details.InternalName}},
+                                                                 @{Name = "ExecutableName" ; Expression = {$_.properties.ExecutableName}},
+                                                                 @{Name = "persistantKey" ; Expression = {$_.properties.details.persistentkey}},
+                                                                 @{Name = "CommandLine" ; Expression = {$_.properties.details.CommandLine}}
+                                                                 
                             }
 
                         "Default"
