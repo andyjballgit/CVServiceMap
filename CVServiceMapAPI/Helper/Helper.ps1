@@ -1,4 +1,5 @@
-﻿<# Helper.ps1 
+﻿
+<# Helper.ps1 
 
 Helper / Unit type tests for Service Map APO calls 
 
@@ -6,16 +7,19 @@ v1.00 Andy Ball 22/2/2017 Base Version
 #>
 
 $ErrorActionPreference = "Stop"
-Import-Module C:\Workarea\Repos\CVServiceMapAPI\CVServiceMapAPI\CVServiceMapAPI -Force -Verbose
+# Import-Module C:\Workarea\Repos\CVServiceMapAPI\CVServiceMapAPI\CVServiceMapAPI -Force -Verbose
+Import-Module C:\Users\Aball\Source\Repos\CVServiceMap\CVServiceMapAPI\CVServiceMapAPI -Verbose -Force 
 
 
 # Change these values
 $VMNames = @("SomeServer")
 $VMName = "Someserver"
 
-$SubscriptionName = "Live" 
+$SubscriptionName = "Live"
+Write-Host "Selecting Subscription = $SubscriptionName"
 Select-AzureRmSubscription -SubscriptionName $SubscriptionName
 
+Write-Host "Getting workspaces"
 $OMSWorkspaces = $null 
 $OMSWorkspaces = Get-AzureRmOperationalInsightsWorkspace 
 
@@ -42,7 +46,9 @@ $LocalEndTime = (Get-Date)
 $LocalStartTime = (Get-Date).AddMinutes(-60)
 
 
-$DoServiceMapLiveness = $false
+$DoMissingADGroup = $true 
+$DoServiceMapRAW = $false
+$DoServiceMapLiveness = $false 
 $DoServiceMapMachineLiveNess = $false
 $DoServiceMapMachineSummary = $false
 $DoServiceMapSummary = $false
@@ -58,7 +64,28 @@ $DoServiceMapLivenessRAW = $False
 $DoServiceMapConnectionsRAW = $false
 $DoServiceMapMachineSummaryRAW = $false 
 $DoServiceMapMachineGroupsRAW = $false
-$DoGetConnectionsFromProcess = $true 
+$DoGetConnectionsFromProcess = $false
+
+
+
+If ($DoMissingADGroup)
+{
+    Write-Host ("*** Running DoMissingADGroup @ " + (Get-Date)) -ForegroundColor Magenta
+    $ADGroupName = "ServiceMapDependencyAgent-1.0"
+    $PingMissingComputers = $true 
+
+    $Results = Get-CVServiceMapMissingByADGroup -OMSWorkspaceName $OMSWorkspaceName `
+                                            -ResourceGroupName $ResourceGroupName `
+                                            -SubscriptionName $SubscriptionName `
+                                            -ADGroupName $ADGroupName `
+                                            -PingMissingComputers $PingMissingComputers `
+                                            -Verbose
+
+    $Results | Sort ComputerName | FT 
+    $Results | Group-Object -Property Found 
+
+
+}
 
 If ($DoGetConnectionsFromProcess)
     {
@@ -86,7 +113,8 @@ If ($DoGetConnectionsFromProcess)
 If ($DoServiceMapRAW)
 {
 
-     $uriSuffix = "/machines/$VMName/liveness?api-version=2015-11-01-preview" 
+     # $uriSuffix = "/machines/$VMName/liveness?api-version=2015-11-01-preview" 
+     $uriSuffix = "/machines?api-version=2015-11-01-preview" 
         $ret = Get-CVServiceMapWrapper -OMSWorkspaceName $OMSWorkspaceName `
                                        -ResourceGroupName $ResourceGroupName `
                                        -SubscriptionName $SubscriptionName `
